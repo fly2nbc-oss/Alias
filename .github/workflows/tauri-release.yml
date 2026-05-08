@@ -1,0 +1,92 @@
+# PRD: tauri-release with tauri-apps/tauri-action; assets per platform; SHA256SUMS.txt
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: '--target aarch64-apple-darwin'
+          - platform: macos-latest
+            args: '--target x86_64-apple-darwin'
+          - platform: ubuntu-22.04
+            args: ''
+          - platform: windows-latest
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install system dependencies (Ubuntu)
+        if: contains(matrix.platform, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev \
+            patchelf libssl-dev
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: 'Alias v__VERSION__'
+          releaseBody: |
+            Builds for Windows, Linux (`.deb` / AppImage when tooling allows), and macOS (`.dmg`).
+            See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md).
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
+          # Enable when `tauri-plugin-updater` + signing are configured (PRD: updater.json).
+          uploadUpdaterJson: false
+          generateReleaseNotes: true
+
+  release-sha256sums:
+    name: SHA256SUMS
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Generate and upload SHA256SUMS.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euxo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          REPO="${{ github.repository }}"
+          mkdir -p _release_assets
+          cd _release_assets
+          gh release download "${TAG}" --repo "${REPO}" --clobber
+          rm -f SHA256SUMS.txt
+          sha256sum * | sort -k2 > SHA256SUMS.txt
+          gh release upload "${TAG}" SHA256SUMS.txt --repo "${REPO}" --clobber

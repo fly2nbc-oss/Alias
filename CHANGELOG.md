@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-05-09
+
+### Added
+
+- GitHub Actions: **CI** (`.github/workflows/ci.yml`) on pushes/PRs to `main`; **Release** (`.github/workflows/tauri-release.yml`) on tags `v*` with `tauri-apps/tauri-action`, multi-platform bundles, and `SHA256SUMS.txt` upload.
+
 ## [1.0.0] - 2026-05-08
 
 ### Added

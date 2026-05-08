@@ -3,6 +3,7 @@
 **Alias** is a **Tauri** desktop app for **pseudonymizing** text and spreadsheets: entity detection (including persons via local ONNX NER), **original → alias** mapping, **encode / decode** with a persistent alias table, file import (e.g. Excel), and light/dark themes.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
+[![CI](https://github.com/fly2nbc-oss/alias/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fly2nbc-oss/alias/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/fly2nbc-oss/alias?label=release&logo=github)](https://github.com/fly2nbc-oss/alias/releases)
 [![Platforms](https://img.shields.io/badge/Platforms-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
 [![Tauri](https://img.shields.io/badge/Framework-Tauri%202-FFC131?logo=tauri)](https://tauri.app/)
@@ -101,8 +102,6 @@ npm run tauri:build
 **Linux AppImage:** Tauri expects [`linuxdeploy`](https://github.com/linuxdeploy/linuxdeploy) on `PATH`. If it is missing, the AppImage step fails but the **`.deb`** bundle can still succeed.
 
 **Smaller binary without bundled ML:** build with `--no-default-features` to disable `onnx-ner` (documented in [`src-tauri/Cargo.toml`](src-tauri/Cargo.toml)).
-
-**Releases / CI:** for installers, checksums, and `updater.json`, see [`tauri-apps/tauri-action`](https://github.com/tauri-apps/tauri-action).
 
 ## Contributing
 
