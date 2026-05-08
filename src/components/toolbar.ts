@@ -3,6 +3,7 @@ import type { NerStatus } from '../api';
 import {
   iconClipboard,
   iconFolderOpen,
+  iconInfo,
   iconLock,
   iconSave,
   iconSearch,
@@ -10,6 +11,7 @@ import {
 } from '../icons';
 import { getState, setState } from '../store';
 import { cycleTheme, syncThemeButton } from '../utils/theme';
+import { showAboutDialog } from './about-dialog';
 import { showToast } from './notification';
 
 export function renderToolbar(container: HTMLElement): void {
@@ -61,6 +63,11 @@ export function renderToolbar(container: HTMLElement): void {
       <span class="ner-dot"></span>
       <span class="ner-label">NER</span>
     </div>
+
+    <button type="button" id="btn-about" class="btn-with-icon ghost" title="About Alias">
+      ${iconInfo}
+      <span>About</span>
+    </button>
   `;
 
   bindEvents(container);
@@ -109,6 +116,10 @@ function bindEvents(container: HTMLElement): void {
   container.querySelector('#btn-theme')!.addEventListener('click', () => {
     cycleTheme();
     syncThemeButton();
+  });
+
+  container.querySelector('#btn-about')!.addEventListener('click', () => {
+    showAboutDialog();
   });
 
   container.querySelector('#btn-open')!.addEventListener('click', async () => {

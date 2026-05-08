@@ -44,3 +44,8 @@ export const iconTrash = svg(
 
 /** Plus — manual entry */
 export const iconPlus = svg('<path d="M12 5v14"/><path d="M5 12h14"/>');
+
+/** Info circle — About */
+export const iconInfo = svg(
+  '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+);

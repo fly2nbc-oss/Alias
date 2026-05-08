@@ -1,11 +1,11 @@
-# Mitwirken an Alias
+# Contributing to Alias
 
-Danke für dein Interesse! Dieses Projekt folgt dem [Code of Conduct](./CODE_OF_CONDUCT.md).
+Thanks for your interest. This project follows the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
-## Voraussetzungen
+## Requirements
 
-- Node.js und npm
-- Rust (stable) und die [Tauri-v2-Systemvoraussetzungen](https://v2.tauri.app/start/prerequisites/)
+- Node.js and npm
+- Rust (stable) and the [Tauri v2 system prerequisites](https://v2.tauri.app/start/prerequisites/)
 
 ## Repository
 
@@ -14,20 +14,18 @@ git clone https://github.com/fly2nbc-oss/alias.git
 cd alias
 ```
 
-## Ablauf
+## Workflow
 
-1. **Issue oder Diskussion:** Für größere Änderungen kurz abstimmen ([Issues](https://github.com/fly2nbc-oss/alias/issues)), damit sich Arbeit nicht überschneidet.
-2. **Fork & Branch:** Aussagekräftiger Branch-Name (`fix/…`, `feat/…`).
-3. **Änderungen:** 
-   - Code- und UI-Stil am bestehenden Projekt ausrichten.
-   - Keine unnötigen Refactorings im gleichen PR.
-4. **Tests / manuelle Checks:** Wo sinnvoll `npm run build` und lokal `npm exec tauri build` oder `cargo test` im `src-tauri`-Verzeichnis.
-5. **Pull Request:** Beschreibung mit Motivation und ggf. Screenshots bei UI-Änderungen.
+1. **Discuss first** — For larger changes, open or comment on an [issue](https://github.com/fly2nbc-oss/alias/issues) so work doesn’t overlap.
+2. **Fork & branch** — Use clear branch names (`fix/…`, `feat/…`).
+3. **Changes** — Match existing code and UI style; avoid unrelated refactors in the same PR.
+4. **Checks** — Where reasonable, run `npm run build` and locally `npm exec tauri build` or `cargo test` in `src-tauri`.
+5. **Pull request** — Describe the motivation; add screenshots for UI changes.
 
-## Releases (Hinweis)
+## Releases
 
-Für automatisierte Builds und Assets (`.deb`, `.AppImage`, NSIS, `.dmg`, SHA256, `updater.json`) eignet sich z. B. die offizielle Action [`tauri-apps/tauri-action`](https://github.com/tauri-apps/tauri-action) in `.github/workflows/`. Siehe PRD-Datei `prd_github_project.md` für die empfohlene Dateiliste pro Release.
+Automated builds and assets (`.deb`, `.AppImage`, NSIS, `.dmg`, `SHA256SUMS.txt`, `updater.json`) are often handled with [`tauri-apps/tauri-action`](https://github.com/tauri-apps/tauri-action) in `.github/workflows/`.
 
-## Lizenz
+## License
 
-Mit dem Einreichen von Beiträgen stimmst du zu, dass diese unter der [Apache-2.0-Lizenz](./LICENSE) des Projekts lizenziert werden.
+By contributing, you agree that your contributions are licensed under the project’s [Apache-2.0 license](./LICENSE).

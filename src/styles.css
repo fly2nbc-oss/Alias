@@ -903,6 +903,133 @@ table.alias-table td select.category-select option {
   width: 440px;
 }
 
+/* About dialog: logo + air, no narrow “compact” column */
+.modal.about-modal {
+  width: min(500px, 94vw);
+  max-width: 500px;
+}
+
+.about-modal-header {
+  padding: var(--space-lg) var(--space-xl);
+  font-size: 15px;
+}
+
+.about-modal-body {
+  padding: 0;
+}
+
+.about-modal-inner {
+  padding: var(--space-xxl) var(--space-xxl) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.about-modal-brand {
+  margin-bottom: var(--space-lg);
+}
+
+.about-logo {
+  width: 112px;
+  height: 112px;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  display: block;
+}
+
+.about-product-name {
+  margin: 0 0 var(--space-xs);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.about-subtitle {
+  margin: 0 0 var(--space-lg);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.about-modal-inner .about-tagline {
+  margin: 0 0 var(--space-xxl);
+  max-width: 38em;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.about-meta {
+  width: 100%;
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.about-version-row {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-xl);
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+}
+
+.about-version-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.about-version-value {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.about-license,
+.about-source {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.about-source {
+  word-break: break-all;
+  max-width: 100%;
+}
+
+.about-modal-body a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.about-modal-body a:hover {
+  text-decoration: underline;
+}
+
+.about-modal-footer {
+  padding: var(--space-lg) var(--space-xl);
+  border-top: 1px solid var(--line);
+}
+
 .modal-header {
   display: flex;
   align-items: center;
