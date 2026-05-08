@@ -1,0 +1,17 @@
+# ONNX Runtime (ort) links against MSVCP140.dll (dynamic MSVC C++ runtime).
+# Rust's default on Windows MSVC is static CRT (crt-static), while native C extensions
+# such as onig_sys (used by tokenizers) also default to /MT (static).
+# Setting CFLAGS=/MD overrides the /MT that the cc crate emits for C code (MSVC uses the
+# last /M* flag), and -crt-static disabled switches Rust's std to dynamic CRT as well.
+# Together both ensure all code uses MSVCP140.dll and eliminates LNK2005 conflicts.
+[target.x86_64-pc-windows-msvc]
+# /OPT:REF removes unreferenced code; /OPT:ICF folds identical COMDATs (smaller PE, works with LTO)
+rustflags = [
+  "-C", "target-feature=-crt-static",
+  "-C", "link-arg=/OPT:REF",
+  "-C", "link-arg=/OPT:ICF",
+]
+# Nur für MSVC: /MD (sonst würde [env] global Linux-Builds mit openssl-sys brechen)
+[target.x86_64-pc-windows-msvc.env]
+CFLAGS = "/MD"
+CXXFLAGS = "/MD"

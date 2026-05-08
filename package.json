@@ -1,0 +1,26 @@
+{
+  "name": "alias",
+  "private": true,
+  "version": "0.9.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "bump-patch": "node scripts/bump-patch.mjs",
+    "tauri:build": "node scripts/bump-patch.mjs && tauri build",
+    "sbom": "npx --yes @cyclonedx/cdxgen -o sbom/cyclonedx-sbom.json ."
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.11.0",
+    "@tauri-apps/plugin-opener": "2.5.4",
+    "@tauri-apps/plugin-dialog": "2.7.1",
+    "@tauri-apps/plugin-fs": "2.5.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.1",
+    "vite": "^6.0.3",
+    "typescript": "~5.6.2"
+  }
+}

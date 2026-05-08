@@ -1,0 +1,52 @@
+# Kuratierte Marken / Produkte (PRD Schicht A), eine Zeile pro Eintrag
+Apple
+Samsung
+Google
+Microsoft
+SAP
+Siemens
+Bosch
+ABB
+Phoenix Contact
+BMW
+Mercedes
+Mercedes-Benz
+Volkswagen
+Audi
+Porsche
+Tesla
+Aspirin
+Ibuprofen
+Ratiopharm
+Sparkasse
+Deutsche Bank
+Allianz
+Amazon
+Zalando
+REWE
+EDEKA
+Lidl
+Aldi
+Netto
+PayPal
+Visa
+Mastercard
+Intel
+AMD
+NVIDIA
+Oracle
+Cisco
+Huawei
+Sony
+Panasonic
+LG
+Dell
+HP
+Lenovo
+Canon
+Epson
+Festo
+Pilz
+Schneider Electric
+Rockwell
+Allen-Bradley
