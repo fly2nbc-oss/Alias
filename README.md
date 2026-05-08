@@ -25,23 +25,24 @@
 
 ## Screenshots
 
-Bilder im Ordner [`./screenshots/`](./screenshots/) ablegen (hohe Auflösung, ideal **Hell- und Dunkelmodus**, je **Windows, Linux, macOS**). Empfohlene Namen:
+Bilder im Ordner [`./screenshots/`](./screenshots/) (hohe Auflösung; ideal **Hell- und Dunkelmodus** und weitere Plattformen). Bereits vorhanden und unten eingebunden:
 
 | Datei | Inhalt |
 |--------|--------|
-| `linux-main-dark.png` | Hauptfenster, Linux, Dark Mode |
-| `linux-main-light.png` | Hauptfenster, Linux, Light Mode |
-| `windows-main.png` | Hauptfenster, Windows |
-| `macos-main.png` | Hauptfenster, macOS |
-| `mapping-panel.png` | Mapping-Tabelle / Alias-Liste |
-| `detect-candidates.png` | NER / Kandidaten-Review |
+| `alias_linux-dark.png` | Hauptfenster Linux, Dark Mode |
+| `alias_linux-light.png` | Hauptfenster Linux, Light Mode |
+| `alias_linux-light-detect.png` | Detect / Kandidaten, Linux Light |
 
-Beispiel-Einbindung (nach dem Ablegen der Dateien die Kommentare entfernen):
+Optional ergänzen: `windows-main.png`, `macos-main.png`, `mapping-panel.png`, …
 
-<!--
-![Hauptansicht (Linux, Dark)](./screenshots/linux-main-dark.png)
-![Mapping](./screenshots/mapping-panel.png)
--->
+Beispiel (aktuell im Repository):
+
+![Hauptansicht (Linux, Dark)](./screenshots/alias_linux-dark.png)
+
+![Hauptansicht (Linux, Light)](./screenshots/alias_linux-light.png)
+![Detect (Linux, Light)](./screenshots/alias_linux-light-detect.png)
+
+Weitere Plattformen: unter den oben genannten Dateinamen ergänzen (`windows-main.png`, …).
 
 ---
 

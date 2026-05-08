@@ -19,7 +19,7 @@
 
 ## Screenshots
 
-Place images in [`./screenshots/`](./screenshots/) (high quality; **dark + light**; **Windows, Linux, macOS**). Suggested names: `linux-main-dark.png`, `windows-main.png`, `mapping-panel.png`, etc. (see German README for a full table).
+Place images in [`./screenshots/`](./screenshots/) (this repo already includes Linux examples). Suggested additional names: `windows-main.png`, `mapping-panel.png`, etc.
 
 ---
 
