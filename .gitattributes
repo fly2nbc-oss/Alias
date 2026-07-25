@@ -1,0 +1,49 @@
+# Zeilenenden plattformübergreifend: im Repo und beim Checkout immer LF,
+# Ausnahme sind Windows-Skripte. Verhindert CRLF/LF-Churn zwischen Rechnern.
+* text=auto eol=lf
+
+# Windows-Skripte brauchen CRLF (cmd.exe stolpert sonst über goto/Labels).
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Unix-Skripte bleiben LF, egal auf welcher Plattform.
+*.sh   text eol=lf
+gradlew text eol=lf
+
+# Binärdateien: Bytes niemals anfassen.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.bmp   binary
+*.tif   binary
+*.tiff  binary
+*.heic  binary
+*.ico   binary
+*.icns  binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.eot   binary
+*.zip   binary
+*.7z    binary
+*.gz    binary
+*.tar   binary
+*.jar   binary
+*.exe   binary
+*.dll   binary
+*.so    binary
+*.dylib binary
+*.bin   binary
+*.keystore binary
+*.jks   binary
+*.mp3   binary
+*.mp4   binary
+*.mov   binary
+*.wav   binary
+*.ogg   binary
+*.gguf  binary
