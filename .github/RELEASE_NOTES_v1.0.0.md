@@ -11,4 +11,4 @@ First **stable** release of the Tauri desktop app for **pseudonymizing** text an
 
 **Note:** For Windows/macOS installers, use [tauri-action](https://github.com/tauri-apps/tauri-action). **AppImage** requires [`linuxdeploy`](https://github.com/linuxdeploy/linuxdeploy) on `PATH` (this CI/local environment may only publish `.deb`).
 
-**Docs:** [README](https://github.com/fly2nbc-oss/alias/blob/main/README.md) · [CHANGELOG](https://github.com/fly2nbc-oss/alias/blob/main/CHANGELOG.md)
+**Docs:** [README](https://github.com/fly2nbc-oss/Alias/blob/main/README.md) · [CHANGELOG](https://github.com/fly2nbc-oss/Alias/blob/main/CHANGELOG.md)

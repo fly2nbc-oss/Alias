@@ -11,4 +11,4 @@ First public release: **Tauri desktop app** for pseudonymizing text and spreadsh
 
 **Note:** Prefer [GitHub Actions](https://github.com/tauri-apps/tauri-action) for Windows/macOS installers (`.exe`/`.msi`, `.dmg`). AppImage requires [`linuxdeploy`](https://github.com/linuxdeploy/linuxdeploy).
 
-Docs: [README](https://github.com/fly2nbc-oss/alias/blob/main/README.md) · Changelog: [CHANGELOG](https://github.com/fly2nbc-oss/alias/blob/main/CHANGELOG.md).
+Docs: [README](https://github.com/fly2nbc-oss/Alias/blob/main/README.md) · Changelog: [CHANGELOG](https://github.com/fly2nbc-oss/Alias/blob/main/CHANGELOG.md).

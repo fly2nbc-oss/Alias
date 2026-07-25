@@ -49,6 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tauri 2 desktop app: anonymization / pseudonymization workflow with local ONNX NER, mapping store, encode/decode, file and Excel-style import.
 
-[Unreleased]: https://github.com/fly2nbc-oss/alias/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/fly2nbc-oss/alias/releases/tag/v1.0.0
-[0.9.1]: https://github.com/fly2nbc-oss/alias/releases/tag/v0.9.1
+[Unreleased]: https://github.com/fly2nbc-oss/Alias/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/fly2nbc-oss/Alias/releases/tag/v1.0.0
+[0.9.1]: https://github.com/fly2nbc-oss/Alias/releases/tag/v0.9.1

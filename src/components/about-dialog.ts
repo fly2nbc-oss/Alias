@@ -1,7 +1,7 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import aboutIconUrl from '../../src-tauri/app-icon-source.png?url';
 
-const REPO_URL = 'https://github.com/fly2nbc-oss/alias';
+const REPO_URL = 'https://github.com/fly2nbc-oss/Alias';
 
 export function showAboutDialog(): void {
   if (document.getElementById('about-overlay')) return;

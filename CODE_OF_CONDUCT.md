@@ -38,7 +38,7 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 You may report abusive, harassing, or otherwise unacceptable behavior to the maintainers:
 
-- **Public:** [GitHub Issues](https://github.com/fly2nbc-oss/alias/issues) for general reports.
+- **Public:** [GitHub Issues](https://github.com/fly2nbc-oss/Alias/issues) for general reports.
 - **Private:** Use GitHub’s private vulnerability or security reporting features, or contact maintainers through discretion-appropriate channels when sensitivity matters.
 
 All complaints will be reviewed and investigated promptly and fairly. Community leaders are obligated to respect the privacy and security of the reporter of any incident.

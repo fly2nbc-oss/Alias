@@ -1,6 +1,6 @@
 # Screenshots (GitHub & marketing)
 
-Repository: <https://github.com/fly2nbc-oss/alias>
+Repository: <https://github.com/fly2nbc-oss/Alias>
 
 Add **3–6** high-quality screenshots here (about **1200px** wide or larger; **PNG** or **WebP**). For the GitHub repo **Social preview**, upload a **1200×630** image in the repository **Settings**.
 

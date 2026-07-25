@@ -10,13 +10,13 @@ Thanks for your interest. This project follows the [Code of Conduct](./CODE_OF_C
 ## Repository
 
 ```bash
-git clone https://github.com/fly2nbc-oss/alias.git
+git clone https://github.com/fly2nbc-oss/Alias.git
 cd alias
 ```
 
 ## Workflow
 
-1. **Discuss first** — For larger changes, open or comment on an [issue](https://github.com/fly2nbc-oss/alias/issues) so work doesn’t overlap.
+1. **Discuss first** — For larger changes, open or comment on an [issue](https://github.com/fly2nbc-oss/Alias/issues) so work doesn’t overlap.
 2. **Fork & branch** — Use clear branch names (`fix/…`, `feat/…`).
 3. **Changes** — Match existing code and UI style; avoid unrelated refactors in the same PR.
 4. **Checks** — Where reasonable, run `npm run build` and locally `npm exec tauri build` or `cargo test` in `src-tauri`.

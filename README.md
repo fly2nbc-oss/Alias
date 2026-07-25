@@ -3,8 +3,8 @@
 **Alias** is a **Tauri** desktop app for **pseudonymizing** text and spreadsheets: entity detection (including persons via local ONNX NER), **original → alias** mapping, **encode / decode** with a persistent alias table, file import (e.g. Excel), and light/dark themes.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![CI](https://github.com/fly2nbc-oss/alias/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fly2nbc-oss/alias/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/fly2nbc-oss/alias?label=release&logo=github)](https://github.com/fly2nbc-oss/alias/releases)
+[![CI](https://github.com/fly2nbc-oss/Alias/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fly2nbc-oss/Alias/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/fly2nbc-oss/Alias?label=release&logo=github)](https://github.com/fly2nbc-oss/Alias/releases)
 [![Platforms](https://img.shields.io/badge/Platforms-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
 [![Tauri](https://img.shields.io/badge/Framework-Tauri%202-FFC131?logo=tauri)](https://tauri.app/)
 
@@ -43,7 +43,7 @@ Optional extras: `windows-main.png`, `macos-main.png`, `mapping-panel.png`, etc.
 
 ### From GitHub Releases
 
-1. Open [Releases](https://github.com/fly2nbc-oss/alias/releases) (`v*` tags).
+1. Open [Releases](https://github.com/fly2nbc-oss/Alias/releases) (`v*` tags).
 2. Download the asset for your OS (`.exe` / NSIS, `.msi`, `.dmg`, `.AppImage`, `.deb` when published).
 3. Verify checksums with `SHA256SUMS.txt` when provided.
 
@@ -74,7 +74,7 @@ Toolbar: file actions, encode/decode-related controls, theme, **NER** status, **
 **Requirements:** Node.js, Rust (stable), and [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS (e.g. WebKitGTK on Linux, WebView2 on Windows).
 
 ```bash
-git clone https://github.com/fly2nbc-oss/alias.git
+git clone https://github.com/fly2nbc-oss/Alias.git
 cd alias
 npm install
 npm run dev              # Vite; use `npm run tauri dev` for the full Tauri shell
