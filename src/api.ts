@@ -5,6 +5,7 @@ import type {
   Category,
   EntityCandidate,
   ParsedDocument,
+  SaveResult,
   SubstitutionResult,
 } from './types';
 
@@ -14,6 +15,11 @@ export async function openFileDialog(): Promise<ParsedDocument | null> {
 
 export async function openFile(path: string): Promise<ParsedDocument> {
   return invoke<ParsedDocument>('open_file', { path });
+}
+
+/** File extensions the backend can open (lowercase, without dot). */
+export async function supportedExtensions(): Promise<string[]> {
+  return invoke<string[]>('supported_extensions');
 }
 
 export async function detectEntities(text: string): Promise<EntityCandidate[]> {
@@ -101,8 +107,8 @@ export async function importStoreDialog(): Promise<AliasEntry[] | null> {
 export async function saveFileCopy(
   sourcePath: string,
   mode: 'encode' | 'decode'
-): Promise<string> {
-  return invoke<string>('save_file_copy', { sourcePath, mode });
+): Promise<SaveResult> {
+  return invoke<SaveResult>('save_file_copy', { sourcePath, mode });
 }
 
 export async function saveTextAsDialog(

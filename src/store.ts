@@ -6,6 +6,7 @@ export interface AppState {
   processedText: string;
   sourcePath: string | null;
   sourceFormat: string | null;
+  sourceWritable: boolean;
   aliasEntries: AliasEntry[];
   candidates: EntityCandidate[];
   showCandidateReview: boolean;
@@ -21,6 +22,7 @@ const state: AppState = {
   processedText: '',
   sourcePath: null,
   sourceFormat: null,
+  sourceWritable: false,
   aliasEntries: [],
   candidates: [],
   showCandidateReview: false,

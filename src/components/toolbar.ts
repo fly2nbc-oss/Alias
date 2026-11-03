@@ -131,6 +131,7 @@ function bindEvents(container: HTMLElement): void {
         processedText: '',
         sourcePath: doc.source_path,
         sourceFormat: doc.format,
+        sourceWritable: doc.writable,
       });
       showToast(`File loaded: ${doc.source_path.split(/[\\/]/).pop()}`, 'success');
     } catch (e: any) {
@@ -174,12 +175,34 @@ function bindEvents(container: HTMLElement): void {
   });
 
   container.querySelector('#btn-save-result')!.addEventListener('click', async () => {
-    const { mode, sourcePath, processedText, originalText } = getState();
-    if (sourcePath) {
+    const { mode, sourcePath, sourceWritable, processedText, originalText } = getState();
+    if (sourcePath && sourceWritable) {
       // Originaldatei bekannt → Kopie im Originalformat mit Ersetzungen erstellen
       try {
         const out = await api.saveFileCopy(sourcePath, mode);
-        showToast(`Saved: ${out.split(/[\\/]/).pop()}`, 'success');
+        const name = out.path.split(/[\\/]/).pop();
+        if (out.replacements === 0) {
+          showToast(`Saved ${name}, but no replacements were made (check confirmed aliases).`, 'info');
+        } else {
+          showToast(`Saved: ${name} (${out.replacements} replacement(s))`, 'success');
+        }
+      } catch (e: any) {
+        showToast(`Save failed: ${e}`, 'error');
+      }
+    } else if (sourcePath) {
+      // Read-only source (PDF, .xls): save the processed text as .txt
+      if (!processedText.trim()) {
+        showToast(
+          `Run ${mode === 'encode' ? 'Encode' : 'Decode'} first — this format is saved as text.`,
+          'info',
+        );
+        return;
+      }
+      const stem = (sourcePath.split(/[\\/]/).pop() ?? 'result').replace(/\.[^.]+$/, '');
+      const suffix = mode === 'encode' ? '_anonym' : '_original';
+      try {
+        const path = await api.saveTextAsDialog(processedText, `${stem}${suffix}.txt`);
+        if (path) showToast(`Saved: ${path.split(/[\\/]/).pop()}`, 'success');
       } catch (e: any) {
         showToast(`Save failed: ${e}`, 'error');
       }

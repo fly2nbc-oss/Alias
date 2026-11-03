@@ -11,6 +11,12 @@ pub async fn open_file(path: String) -> Result<ParsedDocument, String> {
     parser::parse_file(&path).map_err(|e| e.to_string())
 }
 
+/// Alle Endungen, die geöffnet werden können (für Drag & Drop im Frontend).
+#[tauri::command]
+pub fn supported_extensions() -> Vec<String> {
+    crate::formats::all_extensions().into_iter().map(String::from).collect()
+}
+
 #[tauri::command]
 pub async fn open_file_dialog(
     app: tauri::AppHandle,
@@ -21,10 +27,10 @@ pub async fn open_file_dialog(
     let file = app
         .dialog()
         .file()
-        .add_filter(
-            "Supported documents",
-            &["txt", "md", "docx", "xlsx", "xls", "xlsm"],
-        )
+        .add_filter("Supported documents", &crate::formats::all_extensions())
+        .add_filter("Office", &["docx", "docm", "xlsx", "xlsm", "xls", "pptx", "pptm", "odt", "ods", "odp"])
+        .add_filter("PDF", &["pdf"])
+        .add_filter("Text", crate::formats::TEXT_EXTENSIONS)
         .blocking_pick_file();
 
     match file {
@@ -38,13 +44,13 @@ pub async fn open_file_dialog(
 }
 
 /// Erstellt eine Kopie der Originaldatei (gleicher Ordner, `_anonym`/`_original`-Suffix)
-/// mit angewandten Alias-Ersetzungen — behält das Originalformat (.txt, .docx, .xlsx).
+/// mit angewandten Alias-Ersetzungen — behält das Originalformat (Text, Office).
 #[tauri::command]
 pub fn save_file_copy(
     source_path: String,
     mode: String,
     store: State<'_, Mutex<AliasStore>>,
-) -> Result<String, String> {
+) -> Result<file_copy::SaveResult, String> {
     let store = store.lock().map_err(|e| e.to_string())?;
     file_copy::save_copy(&source_path, &mode, &store)
 }
@@ -63,6 +69,7 @@ pub async fn save_text_as_dialog(
         .dialog()
         .file()
         .add_filter("Text files", &["txt", "md"])
+        .add_filter("All files", &["*"])
         .set_file_name(&default)
         .blocking_save_file();
 

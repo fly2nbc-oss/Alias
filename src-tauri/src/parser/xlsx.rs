@@ -1,9 +1,8 @@
 use calamine::{open_workbook_auto, Data, Reader};
 
 use crate::error::AliasError;
-use crate::types::ParsedDocument;
 
-pub fn read(path: &str) -> Result<ParsedDocument, AliasError> {
+pub fn read(path: &str) -> Result<String, AliasError> {
     let mut workbook = open_workbook_auto(path)
         .map_err(|e| AliasError::XlsxParse(format!("{}: {}", path, e)))?;
 
@@ -26,11 +25,7 @@ pub fn read(path: &str) -> Result<ParsedDocument, AliasError> {
         output.push('\n');
     }
 
-    Ok(ParsedDocument {
-        content: output,
-        source_path: path.to_string(),
-        format: "xlsx".to_string(),
-    })
+    Ok(output)
 }
 
 fn cell_to_string(c: &Data) -> String {

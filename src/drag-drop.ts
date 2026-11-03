@@ -3,11 +3,16 @@ import * as api from './api';
 import { showToast } from './components/notification';
 import { setState } from './store';
 
-/** Same extensions as the file dialog (see file_commands / parser) */
-const SUPPORTED = /\.(txt|md|docx|xlsx|xls|xlsm)$/i;
+/** Extensions come from the backend (src-tauri/src/formats.rs) */
+let supported = new Set<string>();
+
+function extOf(path: string): string {
+  const m = /\.([^.\\/]+)$/.exec(path);
+  return m ? m[1].toLowerCase() : '';
+}
 
 function firstSupportedPath(paths: string[]): string | undefined {
-  return paths.find((p) => SUPPORTED.test(p));
+  return paths.find((p) => supported.has(extOf(p)));
 }
 
 /**
@@ -17,6 +22,11 @@ function firstSupportedPath(paths: string[]): string | undefined {
 export async function initFileDragDrop(): Promise<void> {
   const workspace = document.getElementById('workspace');
   if (!workspace) return;
+  try {
+    supported = new Set(await api.supportedExtensions());
+  } catch {
+    supported = new Set(['txt', 'md', 'docx', 'xlsx', 'xlsm', 'pptx', 'pdf']);
+  }
 
   const setActive = (on: boolean) => {
     workspace.classList.toggle('file-drop-active', on);
@@ -41,7 +51,7 @@ export async function initFileDragDrop(): Promise<void> {
         const path = firstSupportedPath(paths);
         if (!path) {
           showToast(
-            'Unsupported format. Allowed: .txt, .md, .docx, .xlsx, .xls, .xlsm',
+            'Unsupported format. Allowed: Office (docx, xlsx, pptx, odt, …), PDF and text files (txt, csv, json, xml, …)',
             'info',
           );
           return;
@@ -54,6 +64,7 @@ export async function initFileDragDrop(): Promise<void> {
             processedText: '',
             sourcePath: doc.source_path,
             sourceFormat: doc.format,
+            sourceWritable: doc.writable,
           });
           const name = path.split(/[/\\]/).pop() ?? path;
           const extra =

@@ -4,9 +4,8 @@
 use std::io::Read;
 
 use crate::error::AliasError;
-use crate::types::ParsedDocument;
 
-pub fn read(path: &str) -> Result<ParsedDocument, AliasError> {
+pub fn read(path: &str) -> Result<String, AliasError> {
     let bytes = std::fs::read(path)
         .map_err(|e| AliasError::FileRead(format!("{}: {}", path, e)))?;
 
@@ -41,11 +40,7 @@ pub fn read(path: &str) -> Result<ParsedDocument, AliasError> {
         }
     }
 
-    Ok(ParsedDocument {
-        content: output.trim().to_string(),
-        source_path: path.to_string(),
-        format: "docx".to_string(),
-    })
+    Ok(output.trim().to_string())
 }
 
 fn read_entry<R: Read + std::io::Seek>(

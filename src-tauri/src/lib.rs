@@ -1,9 +1,12 @@
 mod commands;
 mod detector;
 mod error;
+mod formats;
+mod office_xml;
 mod parser;
 mod store;
 mod substitutor;
+mod text_codec;
 mod types;
 
 use std::sync::Mutex;
@@ -74,6 +77,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             download_ner_model,
             commands::file_commands::open_file,
+            commands::file_commands::supported_extensions,
             commands::file_commands::open_file_dialog,
             commands::file_commands::save_file_copy,
             commands::file_commands::save_text_as_dialog,
