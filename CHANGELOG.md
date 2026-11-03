@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `.xls` no longer fails with a ZIP error on save; Word headers/footers beyond `header1`/`footer1` are now replaced.
+- Release workflow: Windows build links with the dynamic MSVC runtime (ONNX Runtime), Linux builds on `ubuntu-24.04` (glibc ≥ 2.38), Intel macOS is built without local NER (no prebuilt ONNX Runtime for that target).
 
 ## [1.0.1] - 2026-05-09
 
