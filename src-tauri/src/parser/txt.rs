@@ -1,17 +1,6 @@
 use crate::error::AliasError;
-use crate::types::ParsedDocument;
 
-pub fn read(path: &str) -> Result<ParsedDocument, AliasError> {
-    let content = std::fs::read_to_string(path)
-        .map_err(|e| AliasError::FileRead(format!("{}: {}", path, e)))?;
-    let ext = std::path::Path::new(path)
-        .extension()
-        .and_then(|e| e.to_str())
-        .unwrap_or("txt")
-        .to_lowercase();
-    Ok(ParsedDocument {
-        content,
-        source_path: path.to_string(),
-        format: ext,
-    })
+pub fn read(path: &str) -> Result<String, AliasError> {
+    let bytes = std::fs::read(path).map_err(|e| AliasError::FileRead(format!("{}: {}", path, e)))?;
+    Ok(crate::text_codec::decode(&bytes).0)
 }

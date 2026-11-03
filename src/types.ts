@@ -51,6 +51,13 @@ export interface ParsedDocument {
   content: string;
   source_path: string;
   format: string;
+  /** true = a copy in the original format can be written (false for PDF, .xls) */
+  writable: boolean;
+}
+
+export interface SaveResult {
+  path: string;
+  replacements: number;
 }
 
 export interface SubstitutionResult {

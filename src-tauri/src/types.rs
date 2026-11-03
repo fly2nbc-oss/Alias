@@ -163,6 +163,9 @@ pub struct ParsedDocument {
     pub content: String,
     pub source_path: String,
     pub format: String,
+    /// true = Alias kann eine kodierte/dekodierte Kopie im Originalformat schreiben
+    #[serde(default)]
+    pub writable: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

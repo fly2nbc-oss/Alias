@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **More file formats:** PowerPoint (`.pptx`, `.pptm`), Word `.docm`, OpenDocument (`.odt`, `.ods`, `.odp`) and many text formats (`.csv`, `.tsv`, `.log`, `.json`, `.xml`, `.html`, `.yaml`, `.toml`, `.ini`, …). All of them can be saved back encoded/decoded in their original format.
+- **PDF** (text layer, no OCR) and legacy **`.xls`** can be opened; the result is saved as `.txt` (no write-back in the original format).
+- Saving a copy reports the number of replacements and warns when none were made.
+
+### Changed
+
+- Office files: replacement now works on text nodes per paragraph, so names split across formatting runs are replaced too. Markup and attributes are never touched; all headers/footers, footnotes, endnotes, comments, slide masters/layouts/notes, SmartArt, chart titles, cached Excel formula texts and document properties (author) are included.
+- Text files keep their encoding (UTF-8 with/without BOM, UTF-16, Windows-1252) and line endings.
+- Decoding `name_anonym.ext` now writes `name_original.ext` (instead of `name_anonym_original.ext`).
+- Supported extensions are defined once in `src-tauri/src/formats.rs` (parser, save, dialog, drag & drop).
+
+### Fixed
+
+- `.xls` no longer fails with a ZIP error on save; Word headers/footers beyond `header1`/`footer1` are now replaced.
+
 ## [1.0.1] - 2026-05-09
 
 ### Added

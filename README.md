@@ -35,7 +35,7 @@ Optional extras: `windows-main.png`, `macos-main.png`, `mapping-panel.png`, etc.
 - **Split UI**: text panel and **alias table** (original, alias, category, confirmed) with a **resizable** divider.
 - **Encode / decode** with **substitution preview** and highlighting.
 - **Persistent store** (loaded on startup), JSON **import/export**, optional autosave path.
-- **Files**: open dialog and **drag & drop**; text and **spreadsheets** via the Rust parser (e.g. **Excel** through `calamine`).
+- **Files**: open dialog and **drag & drop** for Office (Word, Excel, PowerPoint, OpenDocument), PDF and text files; encoded/decoded copies are written in the original format.
 - **Themes**: light / dark; choice is remembered (`system` / `light` / `dark`).
 - **Stack**: Tauri 2, Vite, TypeScript frontend; Rust backend with optional **`onnx-ner`** feature.
 
@@ -67,7 +67,16 @@ Toolbar: file actions, encode/decode-related controls, theme, **NER** status, **
 |--|--|
 | **Desktop** | Windows, Linux, macOS (depends on Tauri / WebView) |
 | **Bundles** | See [`src-tauri/tauri.conf.json`](src-tauri/tauri.conf.json): e.g. `deb`, `appimage`, `nsis`, `dmg` |
-| **Formats** | Text and spreadsheet formats supported by the parser (notably **Excel** via `calamine`) |
+| **Formats** | See table below |
+
+| Format | Open | Save encoded/decoded copy |
+|--------|------|---------------------------|
+| Word `.docx` `.docm`, Excel `.xlsx` `.xlsm`, PowerPoint `.pptx` `.pptm` | ✓ | ✓ same format (`_anonym` / `_original`) |
+| OpenDocument `.odt` `.ods` `.odp` | ✓ | ✓ same format |
+| Text: `.txt` `.md` `.csv` `.tsv` `.log` `.json` `.xml` `.html` `.yaml` `.toml` `.ini` `.cfg` `.conf` `.properties` `.sql` `.eml` | ✓ | ✓ same format and encoding |
+| PDF (text layer only, no OCR), legacy Excel `.xls` | ✓ | as `.txt` only |
+
+Office files are processed at text-node level: formatting, images and layout stay untouched. Legacy binary `.doc` / `.ppt` are not supported — save them as `.docx` / `.pptx` first. Text in Word field codes and hyperlink targets (e.g. `mailto:`) is not replaced.
 
 ## Development
 

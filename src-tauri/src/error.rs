@@ -11,6 +11,9 @@ pub enum AliasError {
     #[error("DOCX parse error: {0}")]
     DocxParse(String),
 
+    #[error("PDF parse error: {0}")]
+    PdfParse(String),
+
     #[error("XLSX parse error: {0}")]
     XlsxParse(String),
 
