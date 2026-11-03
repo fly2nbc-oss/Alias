@@ -16,9 +16,11 @@ jobs:
         include:
           - platform: macos-latest
             args: '--target aarch64-apple-darwin'
+          # ort ships no prebuilt ONNX Runtime for Intel macOS -> slim build without local NER
           - platform: macos-latest
-            args: '--target x86_64-apple-darwin'
-          - platform: ubuntu-22.04
+            args: '--target x86_64-apple-darwin -- --no-default-features'
+          # prebuilt ONNX Runtime needs glibc >= 2.38 (__isoc23_* symbols)
+          - platform: ubuntu-24.04
             args: ''
           - platform: windows-latest
             args: ''
@@ -50,6 +52,16 @@ jobs:
           sudo apt-get install -y \
             libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev \
             patchelf libssl-dev
+
+      # ONNX Runtime (ort-sys) is built with /MD; the static CRT forced by tauri-build and
+      # esaxx-rs would fail to link with LNK2038 / LNK1169.
+      - name: Use dynamic MSVC runtime (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "STATIC_VCRUNTIME=false" >> "$GITHUB_ENV"
+          echo "CFLAGS=/MD" >> "$GITHUB_ENV"
+          echo "CXXFLAGS=/MD" >> "$GITHUB_ENV"
 
       - name: Install npm dependencies
         run: npm ci

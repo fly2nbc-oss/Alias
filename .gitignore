@@ -26,3 +26,6 @@ src-tauri/target/
 *.njsproj
 *.sln
 *.sw?
+
+# Local build artifacts (installer, exe)
+release/
