@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-03
+
 ### Added
 
 - **More file formats:** PowerPoint (`.pptx`, `.pptm`), Word `.docm`, OpenDocument (`.odt`, `.ods`, `.odp`) and many text formats (`.csv`, `.tsv`, `.log`, `.json`, `.xml`, `.html`, `.yaml`, `.toml`, `.ini`, …). All of them can be saved back encoded/decoded in their original format.
@@ -66,6 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tauri 2 desktop app: anonymization / pseudonymization workflow with local ONNX NER, mapping store, encode/decode, file and Excel-style import.
 
-[Unreleased]: https://github.com/fly2nbc-oss/Alias/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/fly2nbc-oss/Alias/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/fly2nbc-oss/Alias/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/fly2nbc-oss/Alias/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/fly2nbc-oss/Alias/releases/tag/v1.0.0
 [0.9.1]: https://github.com/fly2nbc-oss/Alias/releases/tag/v0.9.1
