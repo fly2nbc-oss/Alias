@@ -37,7 +37,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version: 24
           # No npm cache for release builds: a cache written by another ref
           # must not end up in a released file. zizmor can't evaluate the
           # expression, hence the ignore.

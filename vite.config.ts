@@ -114,7 +114,11 @@ function versionMetaTag(): Plugin {
   return {
     name: "alias:version-meta",
     transformIndexHtml(html) {
-      return html.replace(/<meta charset="UTF-8" \/>/, (m) => `${m}\n    ${versionMeta()}`);
+      // App icon as a data URI: Vite does not inline <link rel="icon"> files
+      const icon = readFileSync(join(rootDir, "src/assets/app-icon-224.png")).toString("base64");
+      return html
+        .replace(/<meta charset="UTF-8" \/>/, (m) => `${m}\n    ${versionMeta()}`)
+        .replace('href="data:," data-alias-icon', `href="data:image/png;base64,${icon}"`);
     },
   };
 }
