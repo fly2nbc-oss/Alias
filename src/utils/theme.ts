@@ -1,19 +1,31 @@
+import { iconMoon, iconSun, iconSunMoon } from '../icons';
+
 export type ThemeMode = 'system' | 'light' | 'dark';
 
-const STORAGE_KEY = 'alias-theme';
+const STORAGE_KEY = 'alias.theme.v1';
+
+const valid = (v: string | null): v is ThemeMode => v === 'light' || v === 'dark' || v === 'system';
 
 export function getStoredTheme(): ThemeMode {
-  const v = localStorage.getItem(STORAGE_KEY);
-  if (v === 'light' || v === 'dark' || v === 'system') return v;
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    if (valid(v)) return v;
+  } catch {
+    /* storage not available */
+  }
   return 'system';
 }
 
+/** Light and dark set `data-theme`; "system" removes it and follows `prefers-color-scheme`. */
 export function applyTheme(mode: ThemeMode): void {
   const root = document.documentElement;
-  root.classList.remove('light', 'dark');
-  if (mode === 'light') root.classList.add('light');
-  if (mode === 'dark') root.classList.add('dark');
-  localStorage.setItem(STORAGE_KEY, mode);
+  if (mode === 'system') root.removeAttribute('data-theme');
+  else root.setAttribute('data-theme', mode);
+  try {
+    localStorage.setItem(STORAGE_KEY, mode);
+  } catch {
+    /* storage not available */
+  }
   syncThemeButton();
 }
 
@@ -23,20 +35,15 @@ export function cycleTheme(): void {
   applyTheme(order[(i + 1) % order.length]);
 }
 
+const LABEL: Record<ThemeMode, string> = { system: 'System', light: 'Light', dark: 'Dark' };
+const NEXT: Record<ThemeMode, ThemeMode> = { system: 'light', light: 'dark', dark: 'system' };
+
 export function syncThemeButton(): void {
   const btn = document.getElementById('btn-theme');
   if (!btn) return;
   const mode = getStoredTheme();
-  const labels: Record<ThemeMode, string> = {
-    system: 'System',
-    light: 'Light',
-    dark: 'Dark',
-  };
-  btn.setAttribute(
-    'aria-label',
-    `Appearance: ${labels[mode]}. Click to cycle.`,
-  );
-  btn.setAttribute('title', `${labels[mode]} — click for next theme`);
-  btn.textContent =
-    mode === 'system' ? '◐ System' : mode === 'light' ? '☀ Light' : '☾ Dark';
+  const text = `Appearance: ${LABEL[mode]} – click for ${LABEL[NEXT[mode]]}`;
+  btn.setAttribute('aria-label', text);
+  btn.title = text;
+  btn.innerHTML = mode === 'system' ? iconSunMoon : mode === 'light' ? iconSun : iconMoon;
 }

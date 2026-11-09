@@ -1,0 +1,26 @@
+# Keeps the pinned actions in ci.yml and the npm dependencies current:
+# one grouped pull request per ecosystem a month (npm: minor and patch).
+# Not covered: xlsx (SheetJS) comes as a tarball from cdn.sheetjs.com, not from the
+# npm registry; update its URL in package.json by hand.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7   # a new version must be a week old: time for a bad release to be pulled
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      npm:
+        patterns: ["*"]
+        update-types: [minor, patch]   # major updates come as single pull requests

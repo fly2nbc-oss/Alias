@@ -1,26 +1,37 @@
 {
   "name": "alias",
   "private": true,
-  "version": "1.1.0",
+  "version": "2.0.0",
+  "description": "Pseudonymize texts and documents before they go to an AI, in one HTML file that runs in the browser.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fly2nbc-oss/Alias.git"
+  },
+  "homepage": "https://github.com/fly2nbc-oss/Alias#readme",
+  "bugs": {
+    "url": "https://github.com/fly2nbc-oss/Alias/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri",
-    "bump-patch": "node scripts/bump-patch.mjs",
-    "tauri:build": "node scripts/bump-patch.mjs && tauri build",
-    "sbom": "npx --yes @cyclonedx/cdxgen -o sbom/cyclonedx-sbom.json ."
+    "test": "vitest run",
+    "bump-patch": "node scripts/bump-patch.mjs"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.11.0",
-    "@tauri-apps/plugin-opener": "2.5.4",
-    "@tauri-apps/plugin-dialog": "2.7.1",
-    "@tauri-apps/plugin-fs": "2.5.1"
+    "@huggingface/transformers": "^4.3.2",
+    "fflate": "^0.8.3",
+    "pdfjs-dist": "^6.5.438",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "2.11.1",
+    "typescript": "~5.6.2",
     "vite": "^6.0.3",
-    "typescript": "~5.6.2"
+    "vitest": "^5.1.0"
   }
 }

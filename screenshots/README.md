@@ -1,17 +1,9 @@
-# Screenshots (GitHub & marketing)
+# Screenshots
 
-Repository: <https://github.com/fly2nbc-oss/Alias>
+| File | Shows |
+|---|---|
+| `alias-main.png` | The README image: `docs/examples/Alias_Example_Text.txt` after **Find names** and **Hide names**, light theme – placeholders highlighted by kind, the list of names and placeholders, the status bar saying what to do next |
 
-Add **3–6** high-quality screenshots here (about **1200px** wide or larger; **PNG** or **WebP**). For the GitHub repo **Social preview**, upload a **1200×630** image in the repository **Settings**.
+How it is taken (repo standard §3.1): by script in Edge (headless), viewport 1440 × 660 at scale 1.5 (2160 × 990 PNG, under 300 KB), only the sample text from `docs/examples/`, smart name finder on, hints closed, pointer away from buttons. Renew it when the interface changes visibly.
 
-## Current / suggested files
-
-| Filename | Description |
-|----------|-------------|
-| `alias_linux-dark.png` | Main window — Linux, dark mode |
-| `alias_linux-light.png` | Main window — Linux, light mode |
-| `alias_linux-light-detect.png` | Detect / candidates — Linux, light mode |
-| `windows-main.png` | (optional) Windows |
-| `macos-main.png` | (optional) macOS |
-
-After adding images, reference them in the root [`README.md`](../README.md) if they should appear above the fold.
+For the repository's social preview, upload a 1200 × 630 image in the repository settings.

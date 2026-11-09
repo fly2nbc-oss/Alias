@@ -1,121 +1,62 @@
-# Alias
+# <img src="docs/icon.svg" width="36" height="36" alt="" align="top"> Alias
 
-**Alias** is a **Tauri** desktop app for **pseudonymizing** text and spreadsheets: entity detection (including persons via local ONNX NER), **original → alias** mapping, **encode / decode** with a persistent alias table, file import (e.g. Excel), and light/dark themes.
+**Pseudonymize texts and documents before they go to an AI – in one HTML file, on your computer.**
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 [![CI](https://github.com/fly2nbc-oss/Alias/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fly2nbc-oss/Alias/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/fly2nbc-oss/Alias?label=release&logo=github)](https://github.com/fly2nbc-oss/Alias/releases)
-[![Platforms](https://img.shields.io/badge/Platforms-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
-[![Tauri](https://img.shields.io/badge/Framework-Tauri%202-FFC131?logo=tauri)](https://tauri.app/)
+[![Runs in](https://img.shields.io/badge/runs%20in-Edge%20%7C%20Chrome-blue.svg)](#start)
 
-## Contents
+Alias finds names, companies, addresses, e-mail addresses, IBANs, phone numbers and more, with simple rules and, if you turn it on, a small AI that runs on your computer. It hides them behind placeholders such as `Person-1` before you hand a text to an AI tool, and brings the real names back into the AI's answer. Everything runs in the browser; documents never leave your computer.
 
-[Screenshots](#screenshots) · [Features](#features) · [Install](#install) · [Usage](#usage) · [Platforms & files](#platforms--file-formats) · [Development](#development) · [Contributing](#contributing) · [License](#license)
+<p align="center">
+  <img src="./screenshots/alias-main.png" alt="Alias after Hide names: the sample text with placeholders highlighted by kind, the list of names and placeholders on the right, and the status bar saying what to do next" width="720" />
+</p>
 
-## Screenshots
+## What it does
 
-Images live in [`screenshots/`](./screenshots/). Included in this repo:
+- **One button for the next step** – Open file, Find names, Hide names, Copy for AI, Paste AI's answer, Bring names back, Copy; the status bar says in one sentence what happened and what comes next.
+- **Find names** – simple rules, and the smart name finder if you turn it on, suggest what to hide; you tick, correct or drop each name in a list grouped by kind.
+- **Hide names and bring them back** – every ticked name becomes its placeholder, in any capitalization and only as a whole word; the AI's answer gets the real names back the same way.
+- **Office, PDF and text files** – Word, Excel, PowerPoint, OpenDocument and many text formats are saved back encoded in the same format; PDF and `.xls` as text. Details in [`docs/FILE-FORMATS.md`](docs/FILE-FORMATS.md).
+- **Clean copies** – an encoded Office copy also loses author, company, dates, comment authors, thumbnail and similar metadata; Alias lists what it removed.
+- **Names and placeholders** – search, sort, change placeholders, untick names, undo a delete; export and import as JSON.
 
-| File | Description |
-|------|-------------|
-| `alias_linux-dark.png` | Main window, Linux, dark mode |
-| `alias_linux-light.png` | Main window, Linux, light mode |
-| `alias_linux-light-detect.png` | Detect / candidates, Linux, light mode |
+## Start
 
-Optional extras: `windows-main.png`, `macos-main.png`, `mapping-panel.png`, etc.
+On Windows, use the installer: download `alias_<version>_windows-installer.zip` from [Releases](https://github.com/fly2nbc-oss/Alias/releases), unpack it and run `install.cmd`. It installs for the current user without admin rights, adds *Alias* to the Start menu, opening in its own Edge window, and adds an entry to *Settings > Apps*. The script is not signed, so Windows may ask whether to run it (*More info > Run anyway*).
 
-![Linux — dark](./screenshots/alias_linux-dark.png)
+With Edge installed, Alias runs there with **its own Edge profile** in `%LOCALAPPDATA%\AliasData\EdgeProfile`. The list of names and the smart name finder live in it, apart from your normal browser: in a normal browser profile all HTML files opened from disk share one storage, so another local file could read the list of names.
 
-![Linux — light](./screenshots/alias_linux-light.png)
-![Linux — detect](./screenshots/alias_linux-light-detect.png)
+- **Update** – run `install.cmd` of the new version. The list of names is kept.
+- **Uninstall** – *Settings > Apps > Alias* removes the app and keeps the list of names and the smart name finder. `uninstall.cmd` in `%LOCALAPPDATA%\Programs\Alias` asks whether to delete them too; `uninstall.cmd /purge` deletes them without asking.
+- **From the desktop app (Alias 1.1 and older)** – uninstall it first; `install.cmd` stops otherwise. Its alias table is not taken over automatically: load `alias_store.json` from the old app's data folder in `%APPDATA%` with **Import** above the list of names.
+- `install.cmd /quiet` skips the pause at the end, for software distribution.
 
-## Features
+Without the installer, download `alias.html` and open it in Edge or Chrome, or put it on a web server. Firefox and Safari are not tested.
 
-- **Local NER** (ONNX): model downloads on first run when needed.
-- **Split UI**: text panel and **alias table** (original, alias, category, confirmed) with a **resizable** divider.
-- **Encode / decode** with **substitution preview** and highlighting.
-- **Persistent store** (loaded on startup), JSON **import/export**, optional autosave path.
-- **Files**: open dialog and **drag & drop** for Office (Word, Excel, PowerPoint, OpenDocument), PDF and text files; encoded/decoded copies are written in the original format.
-- **Themes**: light / dark; choice is remembered (`system` / `light` / `dark`).
-- **Stack**: Tauri 2, Vite, TypeScript frontend; Rust backend with optional **`onnx-ner`** feature.
+Press the blue button at the top right; it always names the next step (`Ctrl+Enter`).
 
-## Install
+| Step | How |
+|---|---|
+| Open a text | **Open file** (`Ctrl+O`), drop a file on the window, or paste text into *1 · My text* |
+| Find names | **Find names** (`Ctrl+Shift+D`); tick the names to hide, then **Use these names**. `Esc` stops a long run |
+| Hide names | **Hide names** (`Ctrl+Shift+E`), then **Copy for AI**, or **Save ▾** a copy of the file with placeholders |
+| Bring names back | **Paste AI's answer** opens *2 · AI's answer*, then **Bring names back** (`Ctrl+Shift+U`) and **Copy** or **Save ▾** |
+| Settings | Gear icon: appearance, smart name finder, update check |
 
-### From GitHub Releases
+On the first start Alias asks about two things that use the internet, both off unless you tick them: the **smart name finder** (a small AI, downloaded once from Hugging Face, about 180 MB) and the weekly **update check**. Without them Alias works fully with simple rules; you can turn them on later in Settings or with **Turn on** in the status bar.
 
-1. Open [Releases](https://github.com/fly2nbc-oss/Alias/releases) (`v*` tags).
-2. Download the asset for your OS (`.exe` / NSIS, `.msi`, `.dmg`, `.AppImage`, `.deb` when published).
-3. Verify checksums with `SHA256SUMS.txt` when provided.
+**Check before sharing**: Alias hides the names in the text it shows you, but it cannot see text inside images (no OCR), only reports OLE objects and macros, does not accept tracked changes (their text is hidden too) and does not rename OpenDocument sheet names. Legacy `.doc`/`.ppt` and password-protected files cannot be opened.
 
-### From source
+## Your data and privacy
 
-See [Development](#development).
+The list of names and placeholders holds your real names. The browser keeps it, with the settings and the smart name finder, until you clear the site data, delete the download in Settings or uninstall with `/purge`. Treat exported lists like the documents themselves.
 
-## Usage
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. Only if you turn them on, Alias connects to `huggingface.co` once to download the smart name finder (pinned to a fixed version and checked file by file) and, once a week, to `api.github.com` to see whether there is a newer release. It never sends documents, text or telemetry. [`SECURITY.md`](./SECURITY.md) has the details.
 
-1. Start the app; allow **NER model download** if prompted (progress is shown in the UI).
-2. Paste text or **open** / **drop** a file.
-3. Run **Detect**, review candidates, accept into the mapping table or **add aliases manually**.
-4. **Encode** applies stored aliases to text; **Decode** reverses using the mapping store.
-5. **Export/import** the store or save results via the file dialogs.
+## More
 
-Toolbar: file actions, encode/decode-related controls, theme, **NER** status, **About**.
+- Building from source: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · Changes: [`CHANGELOG.md`](./CHANGELOG.md) · Security: [`SECURITY.md`](./SECURITY.md)
+- License: Apache 2.0 ([`LICENSE`](./LICENSE)), third-party components and the AI model in [`THIRD_PARTY.md`](./THIRD_PARTY.md)
 
-## Platforms & file formats
-
-| | |
-|--|--|
-| **Desktop** | Windows, Linux, macOS (depends on Tauri / WebView) |
-| **Bundles** | See [`src-tauri/tauri.conf.json`](src-tauri/tauri.conf.json): e.g. `deb`, `appimage`, `nsis`, `dmg` |
-| **Formats** | See table below |
-
-| Format | Open | Save encoded/decoded copy |
-|--------|------|---------------------------|
-| Word `.docx` `.docm`, Excel `.xlsx` `.xlsm`, PowerPoint `.pptx` `.pptm` | ✓ | ✓ same format (`_anonym` / `_original`) |
-| OpenDocument `.odt` `.ods` `.odp` | ✓ | ✓ same format |
-| Text: `.txt` `.md` `.csv` `.tsv` `.log` `.json` `.xml` `.html` `.yaml` `.toml` `.ini` `.cfg` `.conf` `.properties` `.sql` `.eml` | ✓ | ✓ same format and encoding |
-| PDF (text layer only, no OCR), legacy Excel `.xls` | ✓ | as `.txt` only |
-
-Office files are processed at text-node level: formatting, images and layout stay untouched. Legacy binary `.doc` / `.ppt` are not supported — save them as `.docx` / `.pptx` first. Text in Word field codes and hyperlink targets (e.g. `mailto:`) is not replaced.
-
-## Development
-
-**Requirements:** Node.js, Rust (stable), and [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS (e.g. WebKitGTK on Linux, WebView2 on Windows).
-
-```bash
-git clone https://github.com/fly2nbc-oss/Alias.git
-cd alias
-npm install
-npm run dev              # Vite; use `npm run tauri dev` for the full Tauri shell
-```
-
-Frontend only:
-
-```bash
-npm run build            # tsc && vite build
-```
-
-Release binary (no automatic version bump):
-
-```bash
-npm run build
-npm exec tauri build
-```
-
-With automatic patch bump (see `package.json` / `scripts/bump-patch.mjs`):
-
-```bash
-npm run tauri:build
-```
-
-**Linux AppImage:** Tauri expects [`linuxdeploy`](https://github.com/linuxdeploy/linuxdeploy) on `PATH`. If it is missing, the AppImage step fails but the **`.deb`** bundle can still succeed.
-
-**Smaller binary without bundled ML:** build with `--no-default-features` to disable `onnx-ner` (documented in [`src-tauri/Cargo.toml`](src-tauri/Cargo.toml)).
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md). Changelog: [CHANGELOG.md](./CHANGELOG.md).
-
-## License
-
-[Apache-2.0](./LICENSE).
+Microsoft Word, Excel, PowerPoint and Edge are trademarks of Microsoft Corporation, named only to describe file and browser compatibility; this project is not affiliated with Microsoft.

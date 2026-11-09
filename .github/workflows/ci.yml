@@ -1,51 +1,207 @@
-# PRD: automated builds on GitHub Actions
 name: CI
 
+# Pushes and pull requests: install, test and build dist/alias.html (one
+# self-contained file that runs from file://). A `v*` tag also drafts a GitHub
+# release with alias.html and a Windows installer ZIP attached; the tag must match
+# the version in package.json and needs a matching section in CHANGELOG.md.
+#
+# Every action is pinned to a commit, its version as a comment: a tag that is moved
+# can't bring other code into this workflow. Dependabot (.github/dependabot.yml)
+# proposes updates once a month.
 on:
   push:
     branches: [main]
+    tags: ["v*"]
+    # Markdown and screenshots don't need a build. docs/ is not ignored: the tests
+    # read docs/examples/. (Path filters don't apply to tag pushes.)
+    paths-ignore: ["**.md", "screenshots/**"]
   pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+# Read-only by default; only the release job may write (it drafts the release).
+permissions:
+  contents: read
 
 jobs:
-  build-test:
-    runs-on: ubuntu-latest
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install system dependencies (Tauri / Linux)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev \
-            patchelf libssl-dev
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-          cache: npm
-
-      - name: Rust stable
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
+          # No npm cache for release builds: a cache written by another ref
+          # must not end up in a released file. zizmor can't evaluate the
+          # expression, hence the ignore.
+          cache: ${{ !startsWith(github.ref, 'refs/tags/') && 'npm' || '' }} # zizmor: ignore[cache-poisoning]
+          package-manager-cache: false
+      # No install scripts: they are not needed for test and build (onnxruntime-node would
+      # download native binaries that never end up in alias.html).
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run build
+      - name: Build output exists
+        run: |
+          if [ ! -s dist/alias.html ]; then
+            echo "::error::npm run build did not produce dist/alias.html."
+            exit 1
+          fi
+      - name: No network references in the app code
+        run: |
+          # Our own code may only name these URLs: the model download, the project
+          # page and the licence (About dialog), the release check (update banner), and XML namespaces (http only,
+          # never fetched). Tests are left out: they may hold URLs as sample input.
+          # grep exits 1 when it finds nothing; above 1 is an error (e.g. a missing path),
+          # which must fail the step instead of hiding a URL.
+          allowed='^(https://huggingface\.co/.*|https://github\.com/fly2nbc-oss/Alias([/#].*)?|https://api\.github\.com/repos/fly2nbc-oss/Alias/releases/latest|https://(www\.)?apache\.org/licenses/.*|http://(www\.w3\.org|schemas\.openxmlformats\.org|schemas\.microsoft\.com|purl\.org|purl\.oclc\.org|ns\.adobe\.com|docs\.oasis-open\.org)/.*)$'
+          rc=0
+          urls=$(grep -r -h -o -E "https?://[^\"'\`) <>]+" --exclude='*.test.ts' src index.html) || rc=$?
+          if [ "$rc" -gt 1 ]; then
+            echo "::error::grep failed while looking for URLs in src/ and index.html."
+            exit 1
+          fi
+          bad=$(printf '%s\n' "$urls" | grep -v -E -e "$allowed" -e '^$' || true)
+          if [ -n "$bad" ]; then
+            printf '%s\n' "$bad"
+            echo "::error::src/ or index.html reference a network URL that is not allowed (list above)."
+            exit 1
+          fi
+      - name: alias.html loads nothing from the network
+        run: |
+          # The bundled libraries (pdf.js, SheetJS, transformers.js) carry many URLs
+          # in strings and comments, so a URL list on the build would break with every
+          # update. What matters is that the page itself loads no external script,
+          # style, image or frame.
+          if grep -a -o -i -E "<(script|link|img|iframe|source|audio|video|embed|object)\b[^>]*\b(src|href|data)\s*=\s*[\"']?(https?:)?//[^\"' >]*" dist/alias.html; then
+            echo "::error::dist/alias.html loads an external resource."
+            exit 1
+          fi
+          if grep -a -o -i -E "(@import|url\()\s*[\"']?(https?:)?//[^\"' )]*" dist/alias.html; then
+            echo "::error::dist/alias.html loads an external stylesheet, font or image from CSS."
+            exit 1
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          workspaces: src-tauri
+          name: alias-html
+          path: dist/alias.html
+          if-no-files-found: error
+          retention-days: 7
 
-      - name: Install npm dependencies
-        run: npm ci
+  workflows:
+    name: Lint workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: actionlint
+        env:
+          VERSION: 1.7.12
+          SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          file="actionlint_${VERSION}_linux_amd64.tar.gz"
+          curl -sSfL -o "$RUNNER_TEMP/$file" "https://github.com/rhysd/actionlint/releases/download/v$VERSION/$file"
+          echo "$SHA256  $RUNNER_TEMP/$file" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$file" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -color
+      - uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # v0.8.0
+        with:
+          advanced-security: false
 
-      - name: Frontend production build
-        run: npm run build
+  release:
+    name: Draft release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, workflows]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write      # draft the release
+      id-token: write      # sign the provenance attestation
+      attestations: write  # store it
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The file the build job tested, not a second build.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: alias-html
+          path: dist
+      - name: Release notes from CHANGELOG.md
+        id: version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          pkg_version=$(jq -r .version package.json)
+          if [ "$pkg_version" != "$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the version in package.json ($pkg_version)"
+            exit 1
+          fi
+          if ! grep -q -F "$version" dist/alias.html; then
+            echo "::error::dist/alias.html does not contain the version $version"
+            exit 1
+          fi
+          awk -v v="$version" '
+            /^## \[/ { if (found) exit; found = index($0, "## [" v "]") == 1; next }
+            found' CHANGELOG.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::CHANGELOG.md has no section for $version"
+            exit 1
+          fi
+          cat >> notes.md <<'EOF'
 
-      - name: Clippy
-        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets
+          ### Download
 
-      - name: Tests
-        run: cargo test --manifest-path src-tauri/Cargo.toml
+          | File | For |
+          |---|---|
+          | `alias.html` | Open it in Edge or Chrome, nothing to install; or put it on a web server |
+          | `alias_@VERSION@_windows-installer.zip` | Windows: unpack, run `install.cmd`; adds *Alias* to the Start menu for the current user, no admin rights |
+
+          Built by this repository's CI: `gh attestation verify <file> --repo fly2nbc-oss/Alias` checks that.
+          EOF
+          sed -i "s/@VERSION@/$version/" notes.md
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Pack the release files
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir release
+          cp dist/alias.html release/
+          # Windows installer: one folder with the batch scripts, the app and the notices.
+          # .gitattributes checks the .cmd files out with CRLF, as cmd.exe needs.
+          src=packaging/windows
+          # install.cmd refuses to run if any of these is missing.
+          for f in "$src/install.cmd" "$src/uninstall.cmd" "$src/alias.ico" LICENSE NOTICE THIRD_PARTY.md; do
+            if [ ! -f "$f" ]; then
+              echo "::error::$f is missing; the Windows installer needs it."
+              exit 1
+            fi
+          done
+          for f in "$src/install.cmd" "$src/uninstall.cmd"; do
+            if [ "$(tr -cd '\r' < "$f" | wc -c)" -eq 0 ]; then
+              echo "::error::$f has LF line endings; cmd.exe needs CRLF (see .gitattributes)."
+              exit 1
+            fi
+          done
+          pkg="$RUNNER_TEMP/Alias"
+          mkdir -p "$pkg"
+          cp "$src/install.cmd" "$src/uninstall.cmd" "$src/alias.ico" dist/alias.html LICENSE NOTICE THIRD_PARTY.md "$pkg/"
+          (cd "$RUNNER_TEMP" && zip -X -r "$GITHUB_WORKSPACE/release/alias_${VERSION}_windows-installer.zip" Alias)
+          (cd release && sha256sum -- * > SHA256SUMS.txt && cat SHA256SUMS.txt)
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release/*
+      - name: Draft the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: gh release create "$GITHUB_REF_NAME" release/* --draft --verify-tag --title "Alias $VERSION" --notes-file notes.md

@@ -1,83 +1,59 @@
-import { getCurrentWindow } from '@tauri-apps/api/window';
-import * as api from './api';
 import { showToast } from './components/notification';
-import { setState } from './store';
+import { openDocumentFile } from './actions';
+import { allExtensions, extensionOf } from './core/formats';
 
-/** Extensions come from the backend (src-tauri/src/formats.rs) */
-let supported = new Set<string>();
-
-function extOf(path: string): string {
-  const m = /\.([^.\\/]+)$/.exec(path);
-  return m ? m[1].toLowerCase() : '';
-}
-
-function firstSupportedPath(paths: string[]): string | undefined {
-  return paths.find((p) => supported.has(extOf(p)));
-}
+const supported = new Set(allExtensions());
 
 /**
- * Native file drag-and-drop via the Tauri webview (real paths).
- * Visual feedback on #workspace while dragging.
+ * HTML5 drag-and-drop of files onto the workspace.
+ * Visual feedback on #workspace while dragging. Text drops still go to the editor.
  */
-export async function initFileDragDrop(): Promise<void> {
+export function initFileDragDrop(): void {
   const workspace = document.getElementById('workspace');
   if (!workspace) return;
-  try {
-    supported = new Set(await api.supportedExtensions());
-  } catch {
-    supported = new Set(['txt', 'md', 'docx', 'xlsx', 'xlsm', 'pptx', 'pdf']);
-  }
 
-  const setActive = (on: boolean) => {
-    workspace.classList.toggle('file-drop-active', on);
-  };
+  const setActive = (on: boolean) => workspace.classList.toggle('file-drop-active', on);
+  const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes('Files');
+  let depth = 0;
 
-  const win = getCurrentWindow();
-  await win.onDragDropEvent(async (event) => {
-    const p = event.payload;
-    switch (p.type) {
-      case 'enter':
-      case 'over':
-        setActive(true);
-        break;
-      case 'leave':
-        setActive(false);
-        break;
-      case 'drop': {
-        setActive(false);
-        const paths = p.paths;
-        if (paths.length === 0) return;
-
-        const path = firstSupportedPath(paths);
-        if (!path) {
-          showToast(
-            'Unsupported format. Allowed: Office (docx, xlsx, pptx, odt, …), PDF and text files (txt, csv, json, xml, …)',
-            'info',
-          );
-          return;
-        }
-
-        try {
-          const doc = await api.openFile(path);
-          setState({
-            originalText: doc.content,
-            processedText: '',
-            sourcePath: doc.source_path,
-            sourceFormat: doc.format,
-            sourceWritable: doc.writable,
-          });
-          const name = path.split(/[/\\]/).pop() ?? path;
-          const extra =
-            paths.length > 1 ? ` (${paths.length} files, first supported)` : '';
-          showToast(`File loaded: ${name}${extra}`, 'success');
-        } catch (e: unknown) {
-          const msg = e instanceof Error ? e.message : String(e);
-          showToast(`Could not open file: ${msg}`, 'error');
-        }
-        break;
-      }
-      default:
-        break;
-    }
+  workspace.addEventListener('dragenter', (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    depth++;
+    setActive(true);
   });
+  workspace.addEventListener('dragover', (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+  });
+  workspace.addEventListener('dragleave', (e) => {
+    if (!hasFiles(e)) return;
+    depth = Math.max(0, depth - 1);
+    if (depth === 0) setActive(false);
+  });
+  workspace.addEventListener('drop', async (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    depth = 0;
+    setActive(false);
+    const files = Array.from(e.dataTransfer?.files ?? []);
+    if (files.length === 0) return;
+
+    const file = files.find((f) => supported.has(extensionOf(f.name)));
+    if (!file) {
+      showToast(
+        'Alias cannot open this file. It opens Word, Excel, PowerPoint, OpenDocument, PDF and text files (txt, csv, json, xml, …).',
+        'info',
+      );
+      return;
+    }
+
+    const extra = files.length > 1 ? ` (you dropped ${files.length} files; Alias opens one at a time)` : '';
+    await openDocumentFile(file, extra);
+  });
+
+  // Do not let the browser open files that are dropped next to the workspace
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => e.preventDefault());
 }

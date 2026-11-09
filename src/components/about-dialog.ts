@@ -1,91 +1,76 @@
-import { openUrl } from '@tauri-apps/plugin-opener';
-import aboutIconUrl from '../../src-tauri/app-icon-source.png?url';
+// 224 px (2× display size), embedded as a data: URI at build time
+import aboutIconUrl from '../assets/app-icon-224.png?url';
+// License notices are built into alias.html (repo standard §6.3: a single file carries its notices)
+import noticeText from '../../NOTICE?raw';
+import thirdPartyText from '../../THIRD_PARTY.md?raw';
+
+import { iconX } from '../icons';
+import { escHtml, openModal } from './dialog';
 
 const REPO_URL = 'https://github.com/fly2nbc-oss/Alias';
+const LICENSE_URL = 'https://www.apache.org/licenses/LICENSE-2.0';
 
+/** The MIT license block at the end of THIRD_PARTY.md (inside its ```text fence). */
+export function mitLicenseText(md: string): string {
+  const start = md.indexOf('### MIT License');
+  if (start < 0) return '';
+  const fence = md.indexOf('```text', start);
+  const end = fence < 0 ? -1 : md.indexOf('```', fence + 7);
+  return fence < 0 || end < 0 ? '' : md.slice(fence + 7, end).trim();
+}
+
+/** Version, license, source, privacy, and the license notices of the built-in libraries. */
 export function showAboutDialog(): void {
   if (document.getElementById('about-overlay')) return;
 
   const version = import.meta.env.VITE_APP_VERSION;
+  const licenses = `${noticeText.trim()}\n\n\nMIT License (@huggingface/jinja, ONNX Runtime Web, fflate)\n\n${mitLicenseText(thirdPartyText)}`;
 
-  const overlay = document.createElement('div');
-  overlay.id = 'about-overlay';
-  overlay.className = 'modal-overlay';
-  overlay.innerHTML = `
-    <div class="modal about-modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
-      <div class="modal-header about-modal-header">
-        <span id="about-title">About</span>
-        <button type="button" class="modal-close" id="about-close" title="Close">✕</button>
+  const { dialog, close } = openModal({
+    id: 'about-overlay',
+    className: 'about-modal',
+    titleId: 'about-title',
+    describedBy: 'about-tagline',
+    html: `
+      <div class="modal-header">
+        <h2 class="modal-title" id="about-title">About Alias</h2>
+        <button type="button" class="modal-close" id="about-close" aria-label="Close" title="Close (Esc)">${iconX}</button>
       </div>
-      <div class="modal-body about-modal-body">
-        <div class="about-modal-inner">
-          <div class="about-modal-brand">
-            <img
-              class="about-logo"
-              id="about-app-icon"
-              src=""
-              width="112"
-              height="112"
-              alt=""
-            />
-          </div>
-          <h2 class="about-product-name">Alias</h2>
-          <p class="about-subtitle">Anonymization Tool</p>
-          <p class="about-tagline">
-            Pseudonymize text and spreadsheets with local NER, a persistent alias mapping table, and encode/decode workflows.
-          </p>
-          <div class="about-meta">
-            <p class="about-version-row">
-              <span class="about-version-label">Version</span>
-              <span id="about-version-text" class="about-version-value"></span>
-            </p>
-            <p class="about-license">
-              Licensed under <a href="#" id="about-license-link">Apache-2.0</a>
-            </p>
-            <p class="about-source">
-              <a href="#" id="about-repo-link">${REPO_URL}</a>
+      <div class="modal-body about-body">
+        <div class="about-head">
+          <img class="about-logo" id="about-app-icon" src="" width="64" height="64" alt="" />
+          <div>
+            <p class="about-product-name">Alias <span id="about-version-text" class="about-version"></span></p>
+            <p class="about-tagline" id="about-tagline">
+              Hides names in your texts before you ask an AI, and brings them back in the AI's answer.
             </p>
           </div>
         </div>
+        <div class="about-privacy">
+          <strong>Your text stays on this computer.</strong>
+          Texts, files and the list of names never leave the browser. Alias uses the internet only for what
+          you turned on: the one-time download of the smart name finder from Hugging Face, and the weekly
+          update check on GitHub.
+        </div>
+        <dl class="about-meta">
+          <dt>License</dt>
+          <dd><a href="${LICENSE_URL}" target="_blank" rel="noopener">Apache-2.0</a></dd>
+          <dt>Source</dt>
+          <dd><a href="${REPO_URL}" target="_blank" rel="noopener">${REPO_URL.replace('https://', '')}</a></dd>
+        </dl>
+        <details class="about-licenses">
+          <summary>Licenses of the built-in libraries</summary>
+          <pre tabindex="0">${escHtml(licenses)}</pre>
+        </details>
       </div>
-      <div class="modal-footer about-modal-footer">
+      <div class="modal-footer">
         <button type="button" class="primary" id="about-ok">OK</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-  const iconEl = overlay.querySelector('#about-app-icon') as HTMLImageElement;
-  iconEl.src = aboutIconUrl;
-  iconEl.alt = 'Alias';
-
-  const verEl = overlay.querySelector('#about-version-text')!;
-  verEl.textContent = version;
-
-  const onKey = (e: KeyboardEvent): void => {
-    if (e.key === 'Escape') close();
-  };
-
-  const close = (): void => {
-    document.removeEventListener('keydown', onKey);
-    overlay.remove();
-  };
-
-  overlay.querySelector('#about-close')!.addEventListener('click', close);
-  overlay.querySelector('#about-ok')!.addEventListener('click', close);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) close();
+      </div>`,
+    initialFocus: (d) => d.querySelector<HTMLElement>('#about-ok'),
   });
 
-  overlay.querySelector('#about-repo-link')!.addEventListener('click', (e) => {
-    e.preventDefault();
-    void openUrl(REPO_URL);
-  });
-
-  overlay.querySelector('#about-license-link')!.addEventListener('click', (e) => {
-    e.preventDefault();
-    void openUrl('https://www.apache.org/licenses/LICENSE-2.0');
-  });
-
-  document.addEventListener('keydown', onKey);
+  (dialog.querySelector('#about-app-icon') as HTMLImageElement).src = aboutIconUrl;
+  dialog.querySelector('#about-version-text')!.textContent = version;
+  dialog.querySelector('#about-close')!.addEventListener('click', close);
+  dialog.querySelector('#about-ok')!.addEventListener('click', close);
 }
