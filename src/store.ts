@@ -13,6 +13,21 @@ export interface DocState {
   replacements: number;
   /** Result was copied or saved */
   copied: boolean;
+  /** Result was saved as a file (not copied to the clipboard): the AI gets a file */
+  saved?: boolean;
+  /** Places that were shown here but not replaced in the saved file copy */
+  missed?: number;
+}
+
+/** A file opened as the AI's answer in step 2 (its bytes are kept in api.ts) */
+export interface AnswerFile {
+  /** File name */
+  path: string;
+  format: string;
+  /** Can a copy with the real names be written in its format? */
+  writable: boolean;
+  /** Text of the file as shown when it was opened */
+  text: string;
 }
 
 export interface AppState {
@@ -25,6 +40,8 @@ export interface AppState {
   sourceWritable: boolean;
   /** Shown text of the opened file (basis for the copy in the original format) */
   sourceText: string | null;
+  /** File opened as the AI's answer (step 2); `null` = the answer was pasted or typed */
+  answerFile: AnswerFile | null;
   aliasEntries: AliasEntry[];
   /**
    * Text that `candidates` (offsets) refer to: the visible text at the last Detect.
@@ -53,7 +70,7 @@ export type FinderState = 'off' | 'loading' | 'ready' | 'error';
 
 type Listener = () => void;
 
-export const emptyDoc = (input = ''): DocState => ({ input, result: null, replacements: 0, copied: false });
+export const emptyDoc = (input = ''): DocState => ({ input, result: null, replacements: 0, copied: false, saved: false, missed: 0 });
 
 const state: AppState = {
   mode: 'encode',
@@ -62,6 +79,7 @@ const state: AppState = {
   sourceFormat: null,
   sourceWritable: false,
   sourceText: null,
+  answerFile: null,
   aliasEntries: [],
   originalText: '',
   candidates: [],
@@ -100,6 +118,8 @@ export function setInputQuiet(text: string, delayMs = 150): void {
   const d = state.docs[state.mode];
   state.docs = { ...state.docs, [state.mode]: { ...d, input: text } };
   state.dirty = true;
+  // Clearing the AI's answer also forgets the AI's file
+  if (state.mode === 'decode' && !text.trim()) state.answerFile = null;
   if (notifyTimer) clearTimeout(notifyTimer);
   notifyTimer = setTimeout(notify, delayMs);
 }

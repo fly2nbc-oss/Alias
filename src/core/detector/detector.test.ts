@@ -127,6 +127,16 @@ describe('tabular text (Excel/CSV)', () => {
     has(text, 'Anna Weber', 'person');
     for (const c of detectAll(text)) expect(c.text, c.text).not.toMatch(/[\t\n]/);
   });
+
+  it('an address in each row is found; a word ending in -tal next to a number cell is no street', () => {
+    const text =
+      'Name\tAddress\nLaura Hoffmann\tHauptstraße 5, 68159 Mannheim\tCall her.\n' +
+      'Thomas Brenner\tRingstraße 12, 10115 Berlin\tCall him.\nTotal\t1234\n';
+    for (const a of ['Hauptstraße 5', '68159 Mannheim', 'Ringstraße 12', '10115 Berlin']) has(text, a, 'ort');
+    for (const c of detectAll(text)) expect(c.text, c.text).not.toMatch(/[\t\n]|Total/);
+    // A real two-line address stays one block
+    has('Laura Hoffmann\nHauptstraße 5\n68159 Mannheim\n', 'Hauptstraße 5\n68159 Mannheim', 'ort');
+  });
 });
 
 describe('Unicode word boundaries (JS \\b is ASCII-only)', () => {

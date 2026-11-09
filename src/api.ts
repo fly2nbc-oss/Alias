@@ -24,8 +24,11 @@ import type {
 
 const store = new AliasStore();
 
-/** Last opened file (for the copy in the original format) */
-let source: { name: string; bytes: Uint8Array } | null = null;
+/**
+ * Opened files (for the copy in the original format): `encode` = the user's own file (step 1),
+ * `decode` = the file the AI sent back (step 2).
+ */
+const sources: Record<'encode' | 'decode', { name: string; bytes: Uint8Array } | null> = { encode: null, decode: null };
 
 function persist(): void {
   storeJson(JSON.stringify(store.toExport()));
@@ -65,13 +68,23 @@ export async function pickSourceFile(): Promise<File | null> {
 }
 
 
-export async function openFile(file: File): Promise<ParsedDocument> {
+/**
+ * Read a file. `side` = 'encode': the user's own file (step 1; forgets the AI's file too);
+ * 'decode': the file the AI sent back (step 2).
+ */
+export async function openFile(file: File, side: 'encode' | 'decode' = 'encode'): Promise<ParsedDocument> {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const parsed = await parseFile(file.name, bytes);
-  source = { name: file.name, bytes };
+  sources[side] = { name: file.name, bytes };
+  if (side === 'encode') sources.decode = null;
   // Unify line endings: the editor works with \n only
   const content = parsed.content.replace(/\r\n?/g, '\n');
   return { content, source_path: file.name, format: parsed.format, writable: parsed.writable };
+}
+
+/** Forget the AI's file (the answer was pasted, changed or cleared). */
+export function forgetAnswerFile(): void {
+  sources.decode = null;
 }
 
 
@@ -83,15 +96,18 @@ export interface SaveCopyResult extends SaveResult {
 }
 
 /**
- * Copy of the opened file in its original format. `shownText` = shown text of the file;
- * with it the copy reports terms that could not be replaced there (`missed`).
+ * Copy of an opened file in its original format: `encode` = the user's file with placeholders
+ * (cleaned of metadata), `decode` = the AI's file with the real names (not cleaned).
+ * `shownText` = shown text of the file; with it the copy reports terms that could not be
+ * replaced there (`missed`).
  */
 export async function saveFileCopy(
   sourcePath: string,
   mode: 'encode' | 'decode',
   shownText?: string,
 ): Promise<SaveCopyResult | null> {
-  if (!source || source.name !== sourcePath) throw new Error('Source file is no longer available — open it again.');
+  const source = sources[mode];
+  if (!source || source.name !== sourcePath) throw new Error('The file is no longer available – open it again.');
   const copy = makeCopy(source.name, source.bytes, mode, pairs(store.entries.values(), mode), shownText);
   const name = await saveFile(copy.name, new Blob([copy.bytes as BlobPart], { type: 'application/octet-stream' }));
   if (!name) return null;

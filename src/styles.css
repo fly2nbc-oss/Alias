@@ -692,8 +692,9 @@ table.alias-table td select.category-select { width: 100%; height: var(--compact
 }
 .sb-group .icon { color: var(--text-muted); }
 .sb-group .link { margin-left: 6px; }
-.sb-file { flex: 0 1 auto; }
-.sb-file-name { overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+/* The file name gives way first (full name in the tooltip): the sentence matters more */
+.sb-file { flex: 0 1000 auto; }
+.sb-file-name { overflow: hidden; text-overflow: ellipsis; max-width: 220px; min-width: 0; }
 .sb-lock { flex-shrink: 0; border-radius: 0; }
 .sb-lock.attention { animation: lock-flash 0.8s ease; }
 @keyframes lock-flash {

@@ -219,3 +219,43 @@ export function substitute(text: string, entries: Iterable<AliasEntry>, mode: Mo
   const matches = findMatches(text, pairs(entries, mode));
   return { text: applyMatches(text, matches), replacements_made: matches.length };
 }
+
+/** Placeholders written differently than in the list (see `changedPlaceholders`) */
+export interface ChangedPlaceholders {
+  count: number;
+  /** First one as it is written in the text, e.g. "Person 1" */
+  sample: string | null;
+}
+
+/**
+ * Placeholders an AI wrote differently: "Person 1", "Person_1", "Person1" or "Person–1" for
+ * "Person-1". Bring names back does not touch them, so their names would stay hidden. Only
+ * placeholders of the form `Word-N` are checked, and a hit must belong to one in the list.
+ * Spellings that differ only in case are not counted: they are brought back.
+ */
+export function changedPlaceholders(text: string, entries: Iterable<AliasEntry>): ChangedPlaceholders {
+  const known = new Set<string>();
+  const prefixes = new Set<string>();
+  for (const e of entries) {
+    if (!e.confirmed || !e.original || !e.alias) continue;
+    const m = /^(\p{L}[\p{L}\p{M}]*)-(\d+)$/u.exec(e.alias);
+    if (!m) continue;
+    known.add(`${m[1].toLowerCase()}-${Number(m[2])}`);
+    prefixes.add(escapeRe(m[1]));
+  }
+  const none = { count: 0, sample: null };
+  if (!known.size || !text) return none;
+  const re = new RegExp(
+    String.raw`(?<![\p{L}\p{N}\p{M}])(${[...prefixes].join('|')})([\s_.\-\u2010-\u2015]{0,2})(\d+)(?![\p{L}\p{N}\p{M}])`,
+    'giu',
+  );
+  let count = 0;
+  let sample: string | null = null;
+  for (const m of text.matchAll(re)) {
+    if (m[2] === '-' && m[3] === String(Number(m[3]))) continue; // the placeholder itself
+    if (!known.has(`${m[1].toLowerCase()}-${Number(m[3])}`)) continue;
+    count++;
+    sample ??= m[0];
+  }
+  return count ? { count, sample } : none;
+}

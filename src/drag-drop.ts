@@ -1,5 +1,5 @@
 import { showToast } from './components/notification';
-import { openDocumentFile } from './actions';
+import { openDroppedFile } from './actions';
 import { allExtensions, extensionOf } from './core/formats';
 
 const supported = new Set(allExtensions());
@@ -50,7 +50,8 @@ export function initFileDragDrop(): void {
     }
 
     const extra = files.length > 1 ? ` (you dropped ${files.length} files; Alias opens one at a time)` : '';
-    await openDocumentFile(file, extra);
+    // Step 2: the dropped file is the AI's file; step 1: the user's own file
+    await openDroppedFile(file, extra);
   });
 
   // Do not let the browser open files that are dropped next to the workspace

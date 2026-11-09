@@ -14,10 +14,11 @@ Alias finds names, companies, addresses, e-mail addresses, IBANs, phone numbers 
 
 ## What it does
 
-- **One button for the next step** – Open file, Find names, Hide names, Copy for AI, Paste AI's answer, Bring names back, Copy; the status bar says in one sentence what happened and what comes next.
+- **One button for the next step** – Open file, Find names, Hide names, Copy for AI, Paste AI's answer, Bring names back, Copy; with a file: Save file for AI, Open AI's file, Bring names back, Save file. The status bar says in one sentence what happened and what comes next.
+- **Files go both ways** – give the AI a Word or Excel file with placeholders, open the file it sends back (for example with the spelling fixed) and save it with the real names, in the same format.
 - **Find names** – simple rules, and the smart name finder if you turn it on, suggest what to hide; you tick, correct or drop each name in a list grouped by kind.
 - **Hide names and bring them back** – every ticked name becomes its placeholder, in any capitalization and only as a whole word; the AI's answer gets the real names back the same way.
-- **Office, PDF and text files** – Word, Excel, PowerPoint, OpenDocument and many text formats are saved back encoded in the same format; PDF and `.xls` as text. Details in [`docs/FILE-FORMATS.md`](docs/FILE-FORMATS.md).
+- **Office, PDF and text files** – Word, Excel, PowerPoint, OpenDocument and many text formats are saved in the same format, with placeholders for the AI and with the real names after the AI; PDF and `.xls` as text. Details in [`docs/FILE-FORMATS.md`](docs/FILE-FORMATS.md).
 - **Clean copies** – an encoded Office copy also loses author, company, dates, comment authors, thumbnail and similar metadata; Alias lists what it removed.
 - **Names and placeholders** – search, sort, change placeholders, untick names, undo a delete; export and import as JSON.
 
@@ -36,12 +37,22 @@ Without the installer, download `alias.html` and open it in Edge or Chrome, or p
 
 Press the blue button at the top right; it always names the next step (`Ctrl+Enter`).
 
+**A file through an AI and back** – for example a Word or Excel file the AI should check for spelling:
+
+1. **Open file**, **Find names**, tick what to hide, **Hide names**.
+2. **Save file for AI** saves `Report_anonym.docx` with placeholders such as `Person-1`. Give this file to the AI.
+3. **Open AI's file** and choose the file the AI sent back. Alias shows its text with the placeholders marked.
+4. **Bring names back**, then **Save file**: `Report_original.docx` has the real names again and keeps the AI's changes.
+
+The AI must leave the placeholders as they are. Small or capital letters do not matter; if the AI wrote one differently (`Person 1` instead of `Person-1`), the status bar says how many placeholders were not replaced, so you can fix them by hand.
+
 | Step | How |
 |---|---|
 | Open a text | **Open file** (`Ctrl+O`), drop a file on the window, or paste text into *1 · My text* |
 | Find names | **Find names** (`Ctrl+Shift+D`); tick the names to hide, then **Use these names**. `Esc` stops a long run |
-| Hide names | **Hide names** (`Ctrl+Shift+E`), then **Copy for AI**, or **Save ▾** a copy of the file with placeholders |
-| Bring names back | **Paste AI's answer** opens *2 · AI's answer*, then **Bring names back** (`Ctrl+Shift+U`) and **Copy** or **Save ▾** |
+| Hide names | **Hide names** (`Ctrl+Shift+E`), then **Copy for AI** for a text, or **Save file for AI** for a file (a copy with placeholders, `…_anonym.docx`). *Save ▾* also copies or saves the text |
+| Bring names back | **Paste AI's answer** opens *2 · AI's answer*, then **Bring names back** (`Ctrl+Shift+U`) and **Copy** or *Save ▾* |
+| Bring names back into a file | **Open AI's file** (`Ctrl+O` in step 2, or drop the file there) opens the file the AI sent back, in any format Alias reads. **Bring names back**, then **Save file** saves it with the real names in its format (`…_original.docx`) |
 | Settings | Gear icon: appearance, smart name finder, update check |
 
 On the first start Alias asks about two things that use the internet, both off unless you tick them: the **smart name finder** (a small AI, downloaded once from Hugging Face, about 180 MB) and the weekly **update check**. Without them Alias works fully with simple rules; you can turn them on later in Settings or with **Turn on** in the status bar.
