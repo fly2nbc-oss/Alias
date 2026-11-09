@@ -1,98 +1,77 @@
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
-
-import * as api from '../api';
+import { nerStatus, takeRulesOnlyFlag } from '../api';
+import { onNer } from '../core/ner/client';
+import { nerEnabled } from '../core/ner/model-cache';
 import { setState } from '../store';
-import { refreshNerStatus } from './toolbar';
 import { showToast } from './notification';
 
-interface DownloadProgress {
-  phase: string;
-  downloaded: number;
-  total: number;
-  percent: number;
+/**
+ * Follows the smart name finder: its state goes to the store (status bar), and a progress pill
+ * (design system §8) shows the one-time download. Loading from the browser cache shows no pill.
+ */
+export function initFinderProgress(onRetry: () => void): void {
+  const pill = createPill();
+  document.body.appendChild(pill);
+
+  // Progress per file; total over all known files
+  const files = new Map<string, { loaded: number; total: number }>();
+  let downloading = false;
+
+  onNer({
+    progress: ({ file, loaded, total, fromNetwork }) => {
+      if (!fromNetwork) return;
+      files.set(file, { loaded, total });
+      let l = 0;
+      let t = 0;
+      files.forEach((f) => {
+        l += f.loaded;
+        t += f.total;
+      });
+      // Small files (tokenizer, configuration) are not a download worth showing
+      if (!downloading && t < 2_000_000) return;
+      downloading = true;
+      const mb = (n: number) => Math.round(n / 1_000_000);
+      const pct = t > 0 ? Math.min(100, Math.round((l / t) * 100)) : 0;
+      pill.querySelector('.pill-text')!.textContent = `Downloading the smart name finder · ${mb(l)} of ${mb(t)} MB`;
+      (pill.querySelector('.pill-bar') as HTMLElement).style.width = `${pct}%`;
+      pill.classList.remove('hidden');
+      setState({ finderDownload: { loaded: l, total: t } });
+    },
+    state: (s, error) => {
+      if (s === 'loading') {
+        setState({ finder: 'loading', finderError: null });
+        return;
+      }
+      downloading = false;
+      files.clear();
+      pill.classList.add('hidden');
+      if (s === 'ready') {
+        setState({ finder: nerEnabled() ? 'ready' : 'off', finderDownload: null });
+        // Found names with the rules only while the finder was loading → say that it is ready now
+        if (takeRulesOnlyFlag()) showToast('The smart name finder is ready – click Find names again for better results.', 'info', 8000);
+      } else if (s === 'error') {
+        setState({ finder: 'error', finderError: error ?? null, finderDownload: null });
+        showToast('The smart name finder could not be downloaded. Find names uses simple rules.', 'error', undefined, {
+          actions: [{ label: 'Retry', onClick: onRetry }],
+        });
+      } else {
+        setState({ finder: 'off', finderDownload: null });
+      }
+    },
+  });
 }
 
-interface DownloadError {
-  message: string;
-}
-
-export function initDownloadProgress(): void {
-  const container = createBanner();
-  document.body.appendChild(container);
-  hide(container);
-
-  listen<DownloadProgress>('ner-download-progress', (e) => {
-    const { phase, percent, downloaded, total } = e.payload;
-    show(container);
-    const mb = (n: number) => (n / 1_000_000).toFixed(0);
-    const pct = Math.min(100, Math.max(0, Math.round(Number(percent))));
-    setText(
-      container,
-      `Downloading ${phase}: ${pct}% (${mb(downloaded)} / ${mb(total)} MB)`,
-    );
-    setProgress(container, pct);
-    clearError(container);
-  });
-
-  listen('ner-download-complete', async () => {
-    setText(container, 'NER model ready — refreshing…');
-    setProgress(container, 100);
-    clearError(container);
-    try {
-      await refreshNerStatus();
-      const entries = await api.getStore();
-      setState({ aliasEntries: entries });
-      showToast('NER model installed and ready.', 'success');
-    } catch (e) {
-      console.error('Re-init after model download:', e);
-      await refreshNerStatus();
-    }
-    setTimeout(() => hide(container), 3200);
-  });
-
-  listen<DownloadError>('ner-download-error', (e) => {
-    show(container);
-    setText(container, `Download failed: ${e.payload.message}`);
-    setProgress(container, 0);
-    showRetry(container);
-  });
-}
-
-function createBanner(): HTMLElement {
+function createPill(): HTMLElement {
   const el = document.createElement('div');
-  el.id = 'ner-download-banner';
-  el.innerHTML = `
-    <span id="ner-dl-text"></span>
-    <div class="ner-dl-bar-wrap">
-      <div class="ner-dl-bar" id="ner-dl-bar"></div>
-    </div>
-    <button id="ner-dl-retry" class="ner-dl-retry hidden" title="Retry">Retry</button>
-    <button id="ner-dl-close" class="ner-dl-close" title="Close">✕</button>
-  `;
-  el.querySelector('#ner-dl-close')!.addEventListener('click', () => hide(el));
-  el.querySelector('#ner-dl-retry')!.addEventListener('click', async () => {
-    clearError(el);
-    setText(el, 'Starting download…');
-    el.querySelector('#ner-dl-retry')!.classList.add('hidden');
-    await invoke('download_ner_model');
-  });
+  el.id = 'finder-progress';
+  el.className = 'progress-pill hidden';
+  el.setAttribute('role', 'status');
+  el.innerHTML = `<span class="pill-text"></span><span class="pill-track" aria-hidden="true"><span class="pill-bar"></span></span>`;
   return el;
 }
 
-function show(el: HTMLElement): void { el.classList.remove('hidden'); }
-function hide(el: HTMLElement): void { el.classList.add('hidden'); }
-function setText(el: HTMLElement, t: string): void {
-  el.querySelector('#ner-dl-text')!.textContent = t;
-}
-function setProgress(el: HTMLElement, pct: number): void {
-  (el.querySelector('#ner-dl-bar') as HTMLElement).style.width = `${pct}%`;
-}
-function clearError(el: HTMLElement): void {
-  el.querySelector('#ner-dl-retry')!.classList.add('hidden');
-  el.classList.remove('ner-dl-error');
-}
-function showRetry(el: HTMLElement): void {
-  el.querySelector('#ner-dl-retry')!.classList.remove('hidden');
-  el.classList.add('ner-dl-error');
+/** Copy the finder state into the store (after turning it on again while it is still in memory). */
+export async function syncFinder(): Promise<void> {
+  const s = await nerStatus();
+  const finder = s.state === 'ready' ? 'ready' : s.state === 'error' ? 'error' : s.state === 'loading' ? 'loading' : 'off';
+  setState({ finder, finderError: s.error ?? null, ...(finder === 'loading' ? {} : { finderDownload: null }) });
 }

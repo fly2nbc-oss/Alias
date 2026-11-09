@@ -1,0 +1,27 @@
+name: Feature request
+description: An idea that makes pseudonymizing texts and documents with Alias simpler or safer.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Alias is meant to stay one file that runs in the browser, with no data leaving the computer. Please describe the problem first: the best solution often looks different from the first idea.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to do, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+  - type: textarea
+    id: today
+    attributes:
+      label: How do you work around it today?
+  - type: input
+    id: version
+    attributes:
+      label: Alias version
+      placeholder: "1.2.0"

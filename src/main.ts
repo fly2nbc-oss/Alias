@@ -1,14 +1,21 @@
 import * as api from './api';
+import { initShortcuts } from './actions';
 import { initCandidateReview } from './components/candidate-review';
-import { initDownloadProgress } from './components/download-progress';
+import { initFinderProgress, syncFinder } from './components/download-progress';
+import { showFirstRunCard } from './components/first-run';
 import { renderMappingTable } from './components/mapping-table';
+import { initToasts } from './components/notification';
+import { showSettingsDialog } from './components/settings-dialog';
+import { renderStatusBar, setFinderLinkHandler } from './components/status-bar';
 import { renderTextPanel } from './components/text-panel';
 import { renderToolbar } from './components/toolbar';
+import { initUpdateCheck } from './components/update-banner';
+import { consentAsked, startNetworkFeatures } from './core/consent';
 import { initFileDragDrop } from './drag-drop';
-import { setState } from './store';
-import { applyTheme, getStoredTheme, syncThemeButton } from './utils/theme';
+import { getState, hasAnyText, setState } from './store';
+import { applyTheme, getStoredTheme } from './utils/theme';
 
-// Resize handle between text and mapping panels
+// Resize handle between the text and the table of names
 function initResizeHandle(): void {
   const handle = document.getElementById('resize-handle')!;
   const textPanel = document.getElementById('text-panel-container')!;
@@ -27,8 +34,7 @@ function initResizeHandle(): void {
 
   document.addEventListener('mousemove', (e: MouseEvent) => {
     if (!dragging) return;
-    const delta = e.clientX - startX;
-    const newWidth = Math.max(200, startWidth + delta);
+    const newWidth = Math.max(320, startWidth + e.clientX - startX);
     textPanel.style.flex = `0 0 ${newWidth}px`;
   });
 
@@ -41,26 +47,53 @@ function initResizeHandle(): void {
   });
 }
 
+/** Start what the user agreed to (smart name finder, update check) – nothing without consent. */
+function startOptIns(): void {
+  startNetworkFeatures({
+    loadFinder: () => {
+      setState({ finder: 'loading' });
+      void api.enableNer().finally(syncFinder);
+    },
+    checkUpdates: initUpdateCheck,
+  });
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   applyTheme(getStoredTheme());
+  initToasts();
 
-  // Render UI
   renderToolbar(document.getElementById('toolbar')!);
-  syncThemeButton();
   renderTextPanel(document.getElementById('text-panel-container')!);
   renderMappingTable(document.getElementById('mapping-panel-container')!);
+  renderStatusBar(document.getElementById('statusbar')!);
   initCandidateReview();
-  initDownloadProgress();
+  const loadFinder = () => void api.enableNer().finally(syncFinder);
+  initFinderProgress(loadFinder);
   initResizeHandle();
-  void initFileDragDrop();
+  initFileDragDrop();
+  initShortcuts();
+  setFinderLinkHandler((link) => {
+    if (link === 'Retry') loadFinder();
+    else showSettingsDialog('finder');
+  });
 
-  // Load persisted store on startup
+  // Warn before closing or reloading while a text or result has not been copied or saved
+  window.addEventListener('beforeunload', (e) => {
+    const s = getState();
+    if (!(s.dirty && hasAnyText(s)) && !s.isProcessing) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  // Table of names from the browser storage; the network only after consent
+  api.init();
+  if (consentAsked()) startOptIns();
+  else showFirstRunCard(document.getElementById('editor-wrap')!, startOptIns);
+
   try {
     const entries = await api.getStore();
-    if (entries.length > 0) {
-      setState({ aliasEntries: entries });
-    }
+    if (entries.length > 0) setState({ aliasEntries: entries });
   } catch (e) {
-    console.error('Could not load store:', e);
+    console.error('Could not load the table of names:', e);
   }
 });

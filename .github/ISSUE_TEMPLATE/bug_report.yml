@@ -1,0 +1,69 @@
+name: Bug report
+description: Something in Alias does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Please **don't attach real documents or alias tables**: they hold the names Alias is meant to protect. If a file makes it happen, a small one with made-up content helps most. Security problems go to [private reporting](https://github.com/fly2nbc-oss/Alias/security/advisories/new), not here.
+  - type: input
+    id: version
+    attributes:
+      label: Alias version
+      description: The About dialog shows it.
+      placeholder: "1.2.0"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Browser and operating system
+      placeholder: "Edge 141 on Windows 11 / Chrome 141 on Ubuntu 24.04"
+    validations:
+      required: true
+  - type: dropdown
+    id: package
+    attributes:
+      label: How do you run Alias?
+      options:
+        - Windows installer (Start menu)
+        - alias.html opened from disk
+        - alias.html on a web server
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it happen?
+      multiple: true
+      options:
+        - Detect (rules)
+        - Detect (AI model, model download)
+        - Encode / Decode
+        - Opening a file
+        - Saving an encoded or decoded copy
+        - Alias table (edit, import, export)
+        - Settings or update check
+        - Installer / uninstaller
+        - Something else
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to make it happen again
+      placeholder: |
+        1. Open …
+        2. Click …
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect instead?
+  - type: textarea
+    id: log
+    attributes:
+      label: Errors in the browser console (F12 › Console), if any
+      description: Read it first; it can name files or contain text from your document.
+      render: text

@@ -1,0 +1,29 @@
+Alias
+Copyright 2026 fly2nbc-oss
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes third-party components. Their terms and license texts
+are in THIRD_PARTY.md.
+
+Embedded in alias.html:
+
+- Transformers.js 4.3.2 (@huggingface/transformers), Apache License 2.0,
+  Copyright Hugging Face. https://github.com/huggingface/transformers.js
+- @huggingface/tokenizers 0.2.0, Apache License 2.0, Copyright Hugging Face.
+  https://github.com/huggingface/tokenizers.js
+- @huggingface/jinja 0.5.11, MIT License, Copyright (c) 2023 Hugging Face.
+  https://github.com/huggingface/huggingface.js
+- ONNX Runtime Web 1.31.0-dev (onnxruntime-web), MIT License,
+  Copyright (c) Microsoft Corporation. https://github.com/microsoft/onnxruntime
+- PDF.js 6.5.438 (pdfjs-dist), Apache License 2.0, Copyright Mozilla
+  Foundation. https://github.com/mozilla/pdf.js
+- SheetJS Community Edition 0.20.3 (xlsx), Apache License 2.0,
+  Copyright SheetJS LLC. https://sheetjs.com
+- fflate 0.8.3, MIT License, Copyright (c) Arjun Barrett.
+  https://github.com/101arrowz/fflate
+
+Loaded at runtime (not part of this product):
+
+- The AI model, downloaded from Hugging Face on first use; its source and
+  license are listed in THIRD_PARTY.md.
