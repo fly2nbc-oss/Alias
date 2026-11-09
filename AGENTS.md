@@ -70,7 +70,7 @@ Settled; do not propose them again.
 | `src/core/consent.ts` | First-run answer; starts only what the user turned on |
 | `vite.config.ts` | Single-file build, version meta tag, ONNX WASM inlined as gzip + Base64 |
 | `packaging/windows/` | `install.cmd` / `uninstall.cmd` (per user: copy to `%LOCALAPPDATA%\Programs\Alias`, Start menu entry with `msedge --user-data-dir=… --app`, entry in Settings > Apps) and `alias.ico`; the release job zips them with `alias.html`, `LICENSE`, `NOTICE`, `THIRD_PARTY.md` |
-| `docs/` | `icon.svg` (app icon, also inlined as favicon in `index.html`), `FILE-FORMATS.md`, `examples/` (sample documents for manual tests) |
+| `docs/` | `icon.png` (app icon for the README; the app embeds `src/assets/app-icon-224.png` as its window icon via `vite.config.ts`), `FILE-FORMATS.md`, `examples/` (sample documents for manual tests) |
 | `screenshots/` | README screenshots; how to take them in `screenshots/README.md` |
 | `.github/` | CI (`workflows/ci.yml`: build, lint workflows, draft release), Dependabot, issue forms |
 

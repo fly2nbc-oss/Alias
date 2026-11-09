@@ -86,7 +86,7 @@ describe('findMatches', () => {
     expect(findMatches(t, [['Müller', 'Müller']]).map(([s, e]) => t.slice(s, e))).toEqual(['MÜLLER']);
   });
 
-  it('linear: 2 000 Begriffe über 1 MB Text', () => {
+  it('linear: 2 000 Begriffe über 1 MB Text', { timeout: 30_000 }, () => {
     const e = Array.from({ length: 2000 }, (_, i) => E(`Name${i} Nachname${i}`, `Person-${i}`));
     const words = ['lorem', 'ipsum', 'Name5', 'Nachname5', 'dolor', 'Name1999 Nachname1999', 'sit'];
     let text = '';

@@ -1,4 +1,4 @@
-# <img src="docs/icon.svg" width="36" height="36" alt="" align="top"> Alias
+# <img src="docs/icon.png" width="36" height="36" alt="" align="top"> Alias
 
 **Pseudonymize texts and documents before they go to an AI – in one HTML file, on your computer.**
 
