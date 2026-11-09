@@ -7,6 +7,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), version
 
 ## [Unreleased]
 
+## [2.0.1] – 2026-11-09
+
+Same app as 2.0.0, built with newer tools.
+
+### Changed
+
+- **Build**: Vite 8 (was 6) and TypeScript 7 (was 5.6); `alias.html` stays one self-contained file and works as before.
+- **CI**: workflow lint with zizmor-action 0.8.1.
+
 ## [2.0.0] – 2026-11-09
 
 Alias is now a **browser app**: one HTML file, `alias.html`, that runs in Edge or Chrome, and a Windows installer. The desktop app and its Rust backend are gone; everything runs in TypeScript in the browser.
@@ -110,7 +119,8 @@ Alias is now a **browser app**: one HTML file, `alias.html`, that runs in Edge o
 
 - Tauri 2 desktop app: anonymization / pseudonymization workflow with local ONNX NER, mapping store, encode/decode, file and Excel-style import.
 
-[Unreleased]: https://github.com/fly2nbc-oss/Alias/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/fly2nbc-oss/Alias/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/fly2nbc-oss/Alias/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/fly2nbc-oss/Alias/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/fly2nbc-oss/Alias/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/fly2nbc-oss/Alias/compare/v1.0.0...v1.0.1
