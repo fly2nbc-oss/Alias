@@ -184,8 +184,8 @@ export default defineConfig({
     sourcemap: false,
     // The inlined ONNX Runtime (~5 MB) and pdf.js are expected to be large
     chunkSizeWarningLimit: 20000,
-    rollupOptions: {
-      output: { inlineDynamicImports: true },
+    rolldownOptions: {
+      output: { codeSplitting: false },
     },
   },
 
