@@ -44,6 +44,7 @@ Alias is now a **browser app**: one HTML file, `alias.html`, that runs in Edge o
 
 - **Surnames on their own**: "Frau Hoffmann" next to "Laura Hoffmann" was merged into the full name and stayed in plain text after encoding; it now gets its own entry.
 - **Blank lines** no longer double when typing in the editor.
+- **App icon**: the icon of the app window (taskbar, Alt+Tab) was a globe because the built-in icon was cut off; it now shows the Alias icon.
 - **Street addresses** no longer include the space after the house number.
 - **Addresses in tables**: in an Excel sheet or CSV with an address in each row, the addresses were not found, and a cell such as "Total" next to a number cell was taken for a street or product code. Street, post code and product codes no longer run across cells.
 
