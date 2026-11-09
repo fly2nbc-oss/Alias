@@ -5,17 +5,17 @@ import { highlightHtml, highlightSpans } from './highlight';
 
 const entries: AliasEntry[] = [
   { id: '1', original: 'Max', alias: 'Person-1', category: 'person', confirmed: true },
-  { id: '2', original: 'Siemens AG', alias: 'Firma-1', category: 'firma', confirmed: true },
+  { id: '2', original: 'Kranich AG', alias: 'Firma-1', category: 'firma', confirmed: true },
   { id: '3', original: 'Berlin', alias: 'Ort-1', category: 'ort', confirmed: false },
 ];
 
 describe('highlightSpans', () => {
   it('marks exactly what encode replaces (word boundaries, confirmed only)', () => {
-    const text = 'Max und Maximilian bei SIEMENS AG in Berlin.\n\nmax';
+    const text = 'Max und Maximilian bei KRANICH AG in Berlin.\n\nmax';
     const spans = highlightSpans(text, entries, 'encode');
     expect(spans.map(([s, e, c]) => [text.slice(s, e), c])).toEqual([
       ['Max', 'person'],
-      ['SIEMENS AG', 'firma'],
+      ['KRANICH AG', 'firma'],
       ['max', 'person'],
     ]);
     expect(substitute(text, entries, 'encode').replacements_made).toBe(spans.length);
