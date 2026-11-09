@@ -17,7 +17,7 @@ const live = (globalThis as { process?: { env: Record<string, string | undefined
 describe.skipIf(!live)('NER live', () => {
   it('aligns real WordPiece tokens to the text', async () => {
     const tok = await AutoTokenizer.from_pretrained(MODEL_ID, { revision: MODEL_REVISION });
-    const text = 'Herr Jürgen Müller-Lüdenscheidt (Nordwind Logistik GmbH) wohnt in Hamburg 🙂 – Tel. 040/123.';
+    const text = 'Herr Jürgen Müller-Lüdenscheidt (Nordwind Logistik GmbH) wohnt in Hamburg 🙂 – Tel. 040/66969123.';
     const tokens = tok.tokenize(text);
     const offs = alignTokens(text, tokens);
     tokens.forEach((t, i) => {
@@ -29,16 +29,16 @@ describe.skipIf(!live)('NER live', () => {
   it('detects persons, orgs and locations with correct offsets', async () => {
     const tok = await AutoTokenizer.from_pretrained(MODEL_ID, { revision: MODEL_REVISION });
     const model = await AutoModelForTokenClassification.from_pretrained(MODEL_ID, { dtype: 'q8', revision: MODEL_REVISION });
-    const text = 'Gestern traf sich Angela Merkel mit Vertretern von Siemens in München.\n'.repeat(40);
+    const text = 'Gestern traf sich Thomas Brenner mit Vertretern der Nordwind Logistik GmbH in München.\n'.repeat(40);
     const ner = await inferEntities(tok, model, text);
     for (const c of ner) expect(text.slice(...c.offsets[0])).toBe(c.text);
     const kinds = new Set(ner.map((c) => `${c.category}:${c.text}`));
-    expect(kinds).toContain('person:Angela Merkel');
-    expect(kinds).toContain('firma:Siemens');
+    expect(kinds).toContain('person:Thomas Brenner');
+    expect(kinds).toContain('firma:Nordwind Logistik GmbH');
     expect(kinds).toContain('ort:München');
     // Whole text processed across the 512-token limit
-    expect(ner.filter((c) => c.text === 'Angela Merkel').length).toBe(40);
+    expect(ner.filter((c) => c.text === 'Thomas Brenner').length).toBe(40);
     const all = detectAll(text, ner);
-    expect(all.find((c) => c.text === 'Angela Merkel')?.occurrences).toBe(40);
+    expect(all.find((c) => c.text === 'Thomas Brenner')?.occurrences).toBe(40);
   }, 600_000);
 });

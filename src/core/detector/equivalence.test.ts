@@ -113,7 +113,7 @@ function rng(seed: number) {
 }
 
 const CATS: Category[] = ['email', 'iban', 'telefon', 'datum', 'person', 'firma', 'produkt', 'ort', 'betrag', 'sonstiges'];
-const WORDS = ['TÜV', 'Rheinl.', 'Acme', 'GmbH', 'Anna', 'Weber', 'Herr', 'Frau', 'Dr.', 'Müller', 'ß', 'x', '---', 'KMD', 'Consulting', 'Straße', '5', 'ÖÖ'];
+const WORDS = ['ÜWN', 'Prüfst.', 'Acme', 'GmbH', 'Anna', 'Weber', 'Herr', 'Frau', 'Dr.', 'Müller', 'ß', 'x', '---', 'XKT', 'Consulting', 'Straße', '5', 'ÖÖ'];
 
 function randomCandidates(r: () => number, n: number, textLen: number): Candidate[] {
   const pick = <T,>(a: T[]) => a[Math.floor(r() * a.length)];

@@ -44,9 +44,9 @@ describe('findMatches', () => {
   it('Begriffe mit Satzzeichen am Rand', () => {
     expect(enc('Verein e.V. tagt', E('e.V.', 'X'))).toBe('Verein X tagt');
     expect(enc('Die Müller & Söhne GmbH', E('Müller & Söhne', 'F'))).toBe('Die F GmbH');
-    expect(enc('Prüfung TÜV-Rheinl. ok', E('TÜV-Rheinl.', 'F'))).toBe('Prüfung F ok');
+    expect(enc('Prüfung ÜWN-Prüfst. ok', E('ÜWN-Prüfst.', 'F'))).toBe('Prüfung F ok');
     expect(enc('Summe: 1.234 €.', E('1.234 €', 'B'))).toBe('Summe: B.');
-    expect(enc('Mail an max@firma.de!', E('max@firma.de', 'M'))).toBe('Mail an M!');
+    expect(enc('Mail an max@example.com!', E('max@example.com', 'M'))).toBe('Mail an M!');
     expect(enc('Betrag 21.234 €', E('1.234 €', 'B'))).toBe('Betrag 21.234 €');
   });
 

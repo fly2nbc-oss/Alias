@@ -36,9 +36,9 @@ describe('person (rules)', () => {
     expect(p?.text).toBe('Dietmar');
   });
 
-  it('layer C: Christian Adolph Director trims role', () => {
-    const p = detectPerson('Christian Adolph Director wird benachrichtigt.').find((x) => x.text.includes('Christian'));
-    expect(p?.text).toBe('Christian Adolph');
+  it('layer C: Christian Kessler Director trims role', () => {
+    const p = detectPerson('Christian Kessler Director wird benachrichtigt.').find((x) => x.text.includes('Christian'));
+    expect(p?.text).toBe('Christian Kessler');
   });
 
   it('layer C: Thomas Project Lead trims suffix chain', () => {
@@ -49,34 +49,34 @@ describe('person (rules)', () => {
 
 describe('detectAll', () => {
   it('firma via signal word', () => has('Vertrag mit Partner Acme besprochen.', 'Acme', 'firma'));
-  it('TÜV-Rheinl.', () => has('Text mit TÜV-Rheinl. Zertifikat', 'TÜV-Rheinl.', 'firma'));
-  it('KMD Consulting', () => has('Auftrag mit KMD Consulting besprochen.', 'KMD Consulting', 'firma'));
+  it('ÜWN-Prüfst.', () => has('Text mit ÜWN-Prüfst. Zertifikat', 'ÜWN-Prüfst.', 'firma'));
+  it('XKT Consulting', () => has('Auftrag mit XKT Consulting besprochen.', 'XKT Consulting', 'firma'));
 
   it('email and iban', () => {
-    const text = 'Kontakt: mail@beispiel.de IBAN DE89370400440532013000';
-    has(text, 'mail@beispiel.de', 'email');
+    const text = 'Kontakt: mail@example.com IBAN DE89370400440532013000';
+    has(text, 'mail@example.com', 'email');
     expect(detectAll(text).some((c) => c.category === 'iban')).toBe(true);
   });
 
   it('layer C trims calendar suffixes to one entry', () => {
-    const persons = detectAll('Martin Gieswein Onboarding Day und Martin Gieswein Direct.').filter((x) => x.category === 'person');
+    const persons = detectAll('Martin Kellermann Onboarding Day und Martin Kellermann Direct.').filter((x) => x.category === 'person');
     expect(persons).toHaveLength(1);
-    expect(persons[0].text).toBe('Martin Gieswein');
+    expect(persons[0].text).toBe('Martin Kellermann');
     expect(persons[0].occurrences).toBeGreaterThanOrEqual(2);
   });
 
   it('merges Herr and plain same identity', () => {
-    const persons = detectAll('Herr Martin Gieswein traf Martin Gieswein wieder.').filter((x) => x.category === 'person');
+    const persons = detectAll('Herr Martin Kellermann traf Martin Kellermann wieder.').filter((x) => x.category === 'person');
     expect(persons).toHaveLength(1);
-    expect(persons[0].text).toBe('Martin Gieswein');
+    expect(persons[0].text).toBe('Martin Kellermann');
   });
 
   it('does not merge different people', () => {
-    expect(detectAll('Martin Gieswein und Anna Weber treffen sich.').filter((x) => x.category === 'person')).toHaveLength(2);
+    expect(detectAll('Martin Kellermann und Anna Weber treffen sich.').filter((x) => x.category === 'person')).toHaveLength(2);
   });
 
   it('no crash with multibyte text before phone number', () => {
-    expect(() => detectAll('ü'.repeat(25) + 'x'.repeat(98) + ' 0170123456789')).not.toThrow();
+    expect(() => detectAll('ü'.repeat(25) + 'x'.repeat(98) + ' 03023125123')).not.toThrow();
   });
 
   it('gold: geburtsdatum feature', () => {
@@ -105,25 +105,25 @@ describe('surnames standing alone', () => {
   });
 
   it('title and plain form of the same full name are still merged', () => {
-    const persons = detectAll('Herr Martin Gieswein traf Martin Gieswein.').filter((c) => c.category === 'person');
-    expect(persons.map((p) => p.text)).toEqual(['Martin Gieswein']);
+    const persons = detectAll('Herr Martin Kellermann traf Martin Kellermann.').filter((c) => c.category === 'person');
+    expect(persons.map((p) => p.text)).toEqual(['Martin Kellermann']);
   });
 });
 
 describe('phone numbers', () => {
   it('do not run across line or cell breaks', () => {
     const tel = (t: string) => detectAll(t).filter((c) => c.category === 'telefon').map((c) => c.text);
-    expect(tel('Tel. +49 30 700 118 0\n2 Exemplare')).toEqual(['+49 30 700 118 0']);
-    expect(tel('Tel.\t+49 30 700118-0\t12')).toEqual(['+49 30 700118-0']);
-    expect(tel('Mobil: 0170 123 45 67')).toEqual(['0170 123 45 67']);
+    expect(tel('Tel. +49 30 23125 100\n2 Exemplare')).toEqual(['+49 30 23125 100']);
+    expect(tel('Tel.\t+49 30 23125-100\t12')).toEqual(['+49 30 23125-100']);
+    expect(tel('Mobil: 040 669 69 123')).toEqual(['040 669 69 123']);
   });
 });
 
 describe('tabular text (Excel/CSV)', () => {
   it('names and companies do not span cells or rows', () => {
-    const text = '=== Sheet: Kunden ===\nName\tFirma\tBetrag\nAnna Weber\tAcme GmbH\t1234\nMax Mustermann\tSiemens AG\t99.5\n';
+    const text = '=== Sheet: Kunden ===\nName\tFirma\tBetrag\nAnna Weber\tAcme GmbH\t1234\nMax Mustermann\tBergmann Maschinenbau AG\t99.5\n';
     has(text, 'Acme GmbH', 'firma');
-    has(text, 'Siemens AG', 'firma');
+    has(text, 'Bergmann Maschinenbau AG', 'firma');
     has(text, 'Anna Weber', 'person');
     for (const c of detectAll(text)) expect(c.text, c.text).not.toMatch(/[\t\n]/);
   });
@@ -155,12 +155,12 @@ describe('Unicode word boundaries (JS \\b is ASCII-only)', () => {
   });
 
   it('offsets point into the original string', () => {
-    const text = 'Grüße an Frau Müller, Tel. 0170 1234567';
+    const text = 'Grüße an Frau Müller, Tel. 089 99998123';
     for (const c of detectAll(text)) {
       for (const [s, e] of c.offsets) expect(text.slice(s, e).length).toBe(e - s);
     }
     const tel = detectAll(text).find((c) => c.category === 'telefon')!;
-    expect(text.slice(...tel.offsets[0])).toBe('0170 1234567');
+    expect(text.slice(...tel.offsets[0])).toBe('089 99998123');
   });
 });
 
@@ -195,7 +195,7 @@ describe('Wortzwischenraum innerhalb von Namen (nur horizontale Leerzeichen)', (
 
 describe('Firmennamen', () => {
   it('führender Artikel gehört nicht zum Namen', () => {
-    has('Die Siemens AG liefert.', 'Siemens AG', 'firma');
+    has('Die Lindenhof Versicherung AG liefert.', 'Lindenhof Versicherung AG', 'firma');
     has('Mit der Acme GmbH sprechen.', 'Acme GmbH', 'firma');
   });
   it('vollständiger Name mit Rechtsform schlägt Orts-Gazetteer und Marke', () => {
@@ -203,23 +203,23 @@ describe('Firmennamen', () => {
     expect(c.map((x) => `${x.category}:${x.text}`)).toEqual(['firma:Microsoft Deutschland GmbH']);
   });
   it('Aufzählung mehrerer Firmen wird getrennt, GmbH & Co. KG bleibt zusammen', () => {
-    const t = 'Die Siemens AG und Microsoft Deutschland GmbH sowie Müller GmbH & Co. KG.';
+    const t = 'Die Bergmann Maschinenbau AG und Kranich Software GmbH sowie Müller GmbH & Co. KG.';
     const firms = detectAll(t).filter((c) => c.category === 'firma').map((c) => c.text).sort();
-    expect(firms).toEqual(['Microsoft Deutschland GmbH', 'Müller GmbH & Co. KG', 'Siemens AG']);
+    expect(firms).toEqual(['Bergmann Maschinenbau AG', 'Kranich Software GmbH', 'Müller GmbH & Co. KG']);
   });
   it('LLC als Rechtsform', () => has('Vertrag mit Acme LLC.', 'Acme LLC', 'firma'));
 });
 
 describe('Feldbezeichner sind keine Abkürzungs-Kandidaten', () => {
   it('IBAN, BIC, LLC, USt-IdNr., Tel., E-Mail, CEO', () => {
-    const t = 'IBAN: DE89370400440532013000\nBIC: COBADEFFXXX\nUSt-IdNr.: DE123456789\nTel.: 089 1234567\nE-Mail: info@acme.de\nCEO, CFO, PLZ, FAX, LLC';
+    const t = 'IBAN: DE89370400440532013000\nBIC: COBADEFFXXX\nUSt-IdNr.: DE123456789\nTel.: 089 99998 123\nE-Mail: info@example.com\nCEO, CFO, PLZ, FAX, LLC';
     const c = detectAll(t);
     for (const label of ['IBAN', 'BIC', 'LLC', 'USt', 'IdNr', 'Tel', 'E-Mail', 'CEO', 'CFO', 'PLZ', 'FAX']) {
       expect(c.some((x) => x.text === label || x.text.startsWith(label + '-')), label).toBe(false);
     }
     expect(c.find((x) => x.category === 'iban')?.text).toBe('DE89370400440532013000');
   });
-  it('echte Kürzel werden weiter vorgeschlagen', () => has('Projekt mit KMD abgestimmt.', 'KMD', 'sonstiges'));
+  it('echte Kürzel werden weiter vorgeschlagen', () => has('Projekt mit XKT abgestimmt.', 'XKT', 'sonstiges'));
 });
 
 describe('Rust-Parität', () => {
@@ -238,8 +238,8 @@ describe('Rust-Parität', () => {
   });
 
   it('Telefon-Kontext: 100 Bytes Rückblick, nicht 100 Zeichen', () => {
-    const near = detectPhone('Tel. ' + 'x'.repeat(60) + ' 0170 1234567')[0];
-    const far = detectPhone('Tel. ' + 'ü'.repeat(60) + ' 0170 1234567')[0];
+    const near = detectPhone('Tel. ' + 'x'.repeat(60) + ' 030 23125123')[0];
+    const far = detectPhone('Tel. ' + 'ü'.repeat(60) + ' 030 23125123')[0];
     expect(near.confidence).toBe(0.92);
     expect(far.confidence).toBe(0.84); // 66 characters, but 126 bytes back
   });

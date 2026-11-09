@@ -25,9 +25,9 @@ function realistic(len: number): string {
   const tpl = [
     () => `Sehr geehrte Frau ${p(LN)},\nvielen Dank für Ihre Nachricht vom ${1 + (n() % 28)}.${1 + (n() % 12)}.2024. `,
     () => `${p(FN)} ${p(LN)} von der Acme${n()} GmbH hat das Angebot über ${n()},${n() % 99} € geprüft. `,
-    () => `Kontakt: ${p(FN).toLowerCase()}${n()}@beispiel.de, Tel. 089 ${n()}${n()}, IBAN DE89370400440532013000. `,
+    () => `Kontakt: ${p(FN).toLowerCase()}${n()}@example.com, Tel. 089 99998 ${String(n() % 1000).padStart(3, '0')}, IBAN DE89370400440532013000. `,
     () => `Lieferung an ${p(LN)}straße ${1 + (n() % 200)}\n${80000 + (n() % 9999)} München\n`,
-    () => `Das Modell XR${n()} wurde mit TÜV-Rheinl. und KMD Consulting abgestimmt ("Phoenix ${n()}"). `,
+    () => `Das Modell XR${n()} wurde mit ÜWN-Prüfst. und XKT Consulting abgestimmt ("Phoenix ${n()}"). `,
     () => `Name\tFirma\tBetrag\n${p(FN)} ${p(LN)}\tNordwind${n()} AG\t${n()}\n`,
   ];
   let s = '';
