@@ -56,6 +56,7 @@ export async function openDocumentFile(file: File, note = ''): Promise<void> {
       sourceFormat: doc.format,
       sourceWritable: doc.writable,
       sourceText: doc.content,
+      answerFile: null,
       dirty: false,
     });
     if (!doc.content.trim()) showToast(`${file.name} contains no readable text (a scanned PDF or an image?).`, 'info');
@@ -66,11 +67,63 @@ export async function openDocumentFile(file: File, note = ''): Promise<void> {
   }
 }
 
+/**
+ * Load the file the AI sent back as the answer in step 2: its text is shown with the placeholders
+ * marked; its bytes stay in memory for the copy with the real names.
+ */
+export async function openAnswerFile(file: File, note = ''): Promise<void> {
+  if (blocked('openAnswer')) return;
+  const d = getState().docs.decode;
+  if (d.input.trim() || d.result?.trim()) {
+    const ok = await askChoice("Replace the AI's answer?", `Replace the AI's answer in step 2 with "${file.name}"?`, [
+      { value: 'replace', label: 'Replace', primary: true },
+    ]);
+    if (ok !== 'replace') return;
+  }
+  try {
+    const doc = await api.openFile(file, 'decode');
+    const s = getState();
+    setState({
+      mode: 'decode',
+      docs: { ...s.docs, decode: emptyDoc(doc.content) },
+      answerFile: { path: doc.source_path, format: doc.format, writable: doc.writable, text: doc.content },
+      dirty: true,
+    });
+    if (!doc.content.trim()) showToast(`${file.name} contains no readable text (a scanned PDF or an image?).`, 'info');
+    else if (note) showToast(`Opened ${file.name}${note}`, 'info');
+    focusEditor();
+  } catch (e: unknown) {
+    showToast(`Could not open ${file.name}: ${e instanceof Error ? e.message : String(e)}`, 'error');
+  }
+}
+
+/** A file dropped onto the window: in step 2 it is the AI's file, in step 1 the user's own. */
+export async function openDroppedFile(file: File, note = ''): Promise<void> {
+  if (getState().mode === 'decode') await openAnswerFile(file, note);
+  else await openDocumentFile(file, note);
+}
+
+/** Open (button, Ctrl+O): in step 2 the AI's file, in step 1 the user's own file. */
 export async function openViaDialog(): Promise<void> {
+  if (getState().mode === 'decode') {
+    await openAnswerViaDialog();
+    return;
+  }
   if (blocked('open')) return;
   try {
     const file = await api.pickSourceFile();
     if (file) await openDocumentFile(file);
+  } catch (e: unknown) {
+    showToast(`Could not open the file: ${e instanceof Error ? e.message : String(e)}`, 'error');
+  }
+}
+
+/** Open AI's file: pick the file the AI sent back and show it in step 2 (any supported format). */
+export async function openAnswerViaDialog(): Promise<void> {
+  if (getState().isProcessing || blocked('openAnswer')) return;
+  try {
+    const file = await api.pickSourceFile();
+    if (file) await openAnswerFile(file);
   } catch (e: unknown) {
     showToast(`Could not open the file: ${e instanceof Error ? e.message : String(e)}`, 'error');
   }
@@ -154,23 +207,29 @@ export async function runTransform(kind: AppMode): Promise<void> {
       showToast(kind === 'encode' ? 'Nothing to hide – none of the names in the list are in this text.' : 'No placeholders from the list in this text.', 'info');
       return;
     }
-    setDoc({ result: r.text, replacements: r.replacements_made, copied: false }, kind, { dirty: true });
+    setDoc({ result: r.text, replacements: r.replacements_made, copied: false, saved: false, missed: 0 }, kind, { dirty: true });
     await api.saveStore();
   } catch (e: unknown) {
     showToast(`Something went wrong: ${e instanceof Error ? e.message : String(e)}`, 'error');
   }
 }
 
-/** Change text / Change answer: back to the editable input (the result is dropped, the input stays). */
+/**
+ * Change text / Change answer: back to the editable input (the result is dropped, the input stays).
+ * Change answer also forgets the AI's file: the answer is plain text from now on.
+ */
 export function editInput(): void {
-  setDoc({ result: null, replacements: 0, copied: false });
+  const decode = getState().mode === 'decode';
+  if (decode) api.forgetAnswerFile();
+  setDoc({ result: null, replacements: 0, copied: false, saved: false, missed: 0 }, undefined, decode ? { answerFile: null } : {});
   focusEditor();
 }
 
-/** Take a text as the AI's answer in step 2. */
+/** Take a text as the AI's answer in step 2 (an AI's file opened before is forgotten). */
 export function pasteAsAnswer(text: string): void {
   if (blocked('pasteAnswer')) return;
-  setDoc({ input: normalizeText(text), result: null, replacements: 0, copied: false }, 'decode', { mode: 'decode', dirty: true });
+  api.forgetAnswerFile();
+  setDoc({ ...emptyDoc(normalizeText(text)) }, 'decode', { mode: 'decode', answerFile: null, dirty: true });
   focusEditor();
 }
 
@@ -220,19 +279,32 @@ export async function copyVisible(): Promise<void> {
   try {
     await writeClipboard(visibleText(s));
     // The status bar says "Copied"; only a copy of an unfinished text gets a hint
-    if (showingResult(s)) setDoc({ copied: true }, s.mode, { dirty: false });
+    if (showingResult(s)) setDoc({ copied: true, saved: false, missed: 0 }, s.mode, { dirty: false });
     else showToast('Copied.', 'success');
   } catch (e: unknown) {
     showToast(`Could not copy: ${e instanceof Error ? e.message : String(e)}`, 'error');
   }
 }
 
-export async function saveEncodedCopy(): Promise<void> {
+/** Places shown here but not replaced in the copy */
+const missedPlaces = (missed: api.SaveCopyResult['missed']) => missed.reduce((n, m) => n + Math.max(0, m.shown - m.replaced), 0);
+
+/**
+ * Copy in the original format: step 1 (`encode`) = the user's file with placeholders, for the AI;
+ * step 2 (`decode`) = the AI's file with the real names. Counts as handed over (`copied`).
+ */
+export async function saveFileCopy(mode: AppMode = getState().mode): Promise<void> {
+  if (getState().mode !== mode) {
+    goStep(mode);
+    return;
+  }
   if (blocked('saveCopy')) return;
   const s = getState();
-  const path = s.sourcePath!;
+  const enc = mode === 'encode';
+  const path = enc ? s.sourcePath! : s.answerFile!.path;
+  const opened = enc ? s.sourceText : s.answerFile!.text;
   const name = fileName(path);
-  if (s.sourceText !== null && s.docs.encode.input !== s.sourceText) {
+  if (opened !== null && s.docs[mode].input !== opened) {
     const ok = await askChoice(
       'The text was changed',
       `You changed the text after opening it. The copy is made from the file "${name}" itself – your changes in Alias are not in it.`,
@@ -241,25 +313,34 @@ export async function saveEncodedCopy(): Promise<void> {
     if (ok !== 'save') return;
   }
   try {
-    const out = await api.saveFileCopy(path, 'encode', s.sourceText ?? undefined);
+    const out = await api.saveFileCopy(path, mode, opened ?? undefined);
     if (!out) return;
     const saved = fileName(out.path);
-    setDoc({ copied: true }, 'encode', { dirty: false });
+    const missed = missedPlaces(out.missed);
+    setDoc({ copied: true, saved: true, missed }, mode, { dirty: false });
     if (out.missed.length > 0) {
-      const n = out.missed.length;
       const sample = out.missed
         .slice(0, 3)
         .map((m) => `"${m.original.replace(/\s+/g, ' ')}"`)
         .join(', ');
+      const more = out.missed.length > 3 ? ', …' : '';
       showToast(
-        `Saved ${saved}, but ${n} name${n === 1 ? ' was' : 's were'} shown here and not hidden in the file (e.g. date cells in Excel): ` +
-          `${sample}${n > 3 ? ', …' : ''}. Check the copy before you share it.`,
+        enc
+          ? `Saved ${saved}, but ${missed} place${missed === 1 ? ' was' : 's were'} shown here and not hidden in the file (e.g. date cells in Excel): ` +
+              `${sample}${more}. Check the copy before you share it.`
+          : `Saved ${saved}, but ${missed} placeholder${missed === 1 ? ' was' : 's were'} not replaced in the file: ${sample}${more}. ` +
+              'Check the file – the AI may have changed them.',
         'warning',
       );
     } else if (out.replacements === 0) {
-      showToast(`Saved ${saved}, but nothing was hidden – none of the names in the list are in the file.`, 'warning');
+      showToast(
+        enc
+          ? `Saved ${saved}, but nothing was hidden – none of the names in the list are in the file.`
+          : `Saved ${saved}, but no names came back – there are no placeholders from the list in the file.`,
+        'warning',
+      );
     } else {
-      showToast(`Saved ${saved} – names hidden in ${out.replacements} place${out.replacements === 1 ? '' : 's'}.`, 'success');
+      showToast(`Saved ${saved} – ${enc ? 'names hidden' : 'names back'} in ${out.replacements} place${out.replacements === 1 ? '' : 's'}.`, 'success');
     }
     if (out.removed?.length) showToast(`Also removed from the copy: ${out.removed.join(', ')}`, 'info', 7000);
   } catch (e: unknown) {
@@ -271,13 +352,14 @@ export async function saveText(): Promise<void> {
   if (blocked('saveText')) return;
   const s = getState();
   const result = showingResult(s);
-  const stem = s.sourcePath ? fileName(s.sourcePath).replace(/\.[^.]+$/, '') : 'alias-text';
+  const from = s.mode === 'decode' && s.answerFile ? s.answerFile.path : s.sourcePath;
+  const stem = from ? fileName(from).replace(/\.[^.]+$/, '') : 'alias-text';
   // File suffixes stay as in earlier versions (_encoded / _decoded)
   const suffix = result ? (s.mode === 'encode' ? '_encoded' : '_decoded') : '';
   try {
     const path = await api.saveTextAsDialog(visibleText(s), `${stem}${suffix}.txt`);
     if (!path) return;
-    if (result) setDoc({ copied: true }, s.mode, { dirty: false });
+    if (result) setDoc({ copied: true, saved: true, missed: 0 }, s.mode, { dirty: false });
     else setState({ dirty: false });
     showToast(`Saved ${fileName(path)}.`, 'success');
   } catch (e: unknown) {
@@ -292,9 +374,12 @@ const RUN: Record<PrimaryId, () => unknown> = {
   find: runFind,
   hide: () => runTransform('encode'),
   copyForAi: copyVisible,
+  saveForAi: () => saveFileCopy('encode'),
   pasteAnswer: pasteAnswerFromClipboard,
+  openAnswer: openAnswerViaDialog,
   bringBack: () => runTransform('decode'),
   copy: copyVisible,
+  saveFile: () => saveFileCopy('decode'),
 };
 
 export function runPrimary(): void {

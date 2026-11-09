@@ -4,12 +4,13 @@
  */
 import {
   cancelFind,
+  copyVisible,
   goStep,
   isFinding,
   openViaDialog,
   runFind,
   runPrimary,
-  saveEncodedCopy,
+  saveFileCopy,
   saveText,
   states,
 } from '../actions';
@@ -36,9 +37,12 @@ const PRIMARY_ICON: Record<PrimaryId, string> = {
   find: P.search,
   hide: P.eyeOff,
   copyForAi: P.copy,
+  saveForAi: P.save,
   pasteAnswer: P.paste,
+  openAnswer: P.folderOpen,
   bringBack: P.eye,
   copy: P.copy,
+  saveFile: P.save,
 };
 
 export function renderToolbar(container: HTMLElement): void {
@@ -74,6 +78,10 @@ export function renderToolbar(container: HTMLElement): void {
         </button>
         <button type="button" id="btn-save-text" role="menuitem">
           <span class="menu-title">Text (.txt)</span>
+          <span class="menu-hint"></span>
+        </button>
+        <button type="button" id="btn-copy-text" role="menuitem">
+          <span class="menu-title">Copy the text</span>
           <span class="menu-hint"></span>
         </button>
       </div>
@@ -114,7 +122,9 @@ function updateToolbar(container: HTMLElement): void {
   // Open / Find names stay quiet; the one that is the next step moves to the primary button
   const open = q('#btn-open');
   applyAction(open, st.open);
-  open.classList.toggle('hidden', p.id === 'open');
+  // In step 2 Open opens the AI's file: the same as "Open AI's file". In step 1 Open stays for the
+  // user's own file, even when the primary already offers the AI's file.
+  open.classList.toggle('hidden', p.id === 'open' || (p.id === 'openAnswer' && s.mode === 'decode'));
   const find = q('#btn-detect');
   applyAction(find, st.find);
   const busy = s.isProcessing && isFinding();
@@ -138,10 +148,19 @@ function updateToolbar(container: HTMLElement): void {
   applyAction(q('#btn-save-result'), st.save);
   applyAction(q('#btn-save-copy'), st.saveCopy);
   applyAction(q('#btn-save-text'), st.saveText);
-  const name = s.sourcePath ? (s.sourcePath.split(/[\\/]/).pop() ?? '') : '';
-  q('#btn-save-copy .menu-title').textContent = name ? `Copy of ${name} with placeholders` : 'Copy in the original format';
-  q('#btn-save-copy .menu-hint').textContent = st.saveCopy.enabled ? 'Same format as the file, names hidden' : st.saveCopy.title;
+  applyAction(q('#btn-copy-text'), st.copy);
+  // Step 1: own file with placeholders; step 2: the AI's file with the real names
+  const enc = s.mode === 'encode';
+  const path = enc ? s.sourcePath : (s.answerFile?.path ?? null);
+  const name = path ? (path.split(/[\\/]/).pop() ?? '') : '';
+  q('#btn-save-copy .menu-title').textContent = name
+    ? `Copy of ${name} ${enc ? 'with placeholders' : 'with the real names'}`
+    : 'Copy in the original format';
+  q('#btn-save-copy .menu-hint').textContent = st.saveCopy.enabled
+    ? `Same format as the file, ${enc ? 'names hidden' : 'names back'}`
+    : st.saveCopy.title;
   q('#btn-save-text .menu-hint').textContent = st.saveText.enabled ? 'The text shown, as .txt' : st.saveText.title;
+  q('#btn-copy-text .menu-hint').textContent = st.copy.enabled ? 'The text shown, to paste somewhere else' : st.copy.title;
 
   container.setAttribute('aria-busy', String(s.isProcessing));
 }
@@ -178,11 +197,15 @@ function bindEvents(container: HTMLElement): void {
   });
   container.querySelector('#btn-save-copy')!.addEventListener('click', () => {
     setMenu(container, false);
-    void saveEncodedCopy();
+    void saveFileCopy();
   });
   container.querySelector('#btn-save-text')!.addEventListener('click', () => {
     setMenu(container, false);
     void saveText();
+  });
+  container.querySelector('#btn-copy-text')!.addEventListener('click', () => {
+    setMenu(container, false);
+    void copyVisible();
   });
   document.addEventListener('click', (e) => {
     if (!menu.classList.contains('hidden') && !(e.target as Element).closest('.save-menu-wrap')) setMenu(container, false);

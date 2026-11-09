@@ -1,6 +1,6 @@
 # File formats
 
-Alias opens a file, shows its text for **Find names**, and saves a copy with the names hidden (placeholders) or brought back. The original file is never changed.
+Alias opens a file, shows its text for **Find names**, and saves a copy with the names hidden (placeholders). When the AI sends back a file, Alias opens it in *2 · AI's answer* and saves a copy with the real names brought back. The original file is never changed.
 
 ## What Alias opens and saves
 
@@ -13,7 +13,11 @@ Alias opens a file, shows its text for **Find names**, and saves a copy with the
 
 Not supported: legacy Word `.doc` and PowerPoint `.ppt`, and password-protected files.
 
-The copy is named after the original with `_anonym` (names hidden) or `_original` (names brought back); names in the file name are hidden too: `Contract_Max_Mustermann.docx` becomes `Contract_Person-1_anonym.docx`. In Edge and Chrome a *Save as* dialog asks where to put it, other browsers download it.
+The copy is named after the original with `_anonym` (names hidden, **Save file for AI**) or `_original` (names brought back, **Save file** in step 2); the opposite suffix is replaced, so `Contract_anonym.docx` comes back as `Contract_original.docx`. Names in the file name are hidden and brought back too: `Contract_Max_Mustermann.docx` becomes `Contract_Person-1_anonym.docx`. In Edge and Chrome a *Save as* dialog asks where to put it, other browsers download it.
+
+## Files from the AI
+
+The AI's file can be in any format Alias opens, not only the one you gave it; a copy with the real names is written for the formats in the table above, other files (PDF, `.xls`) are saved as text. Alias replaces placeholders in any capitalization and also when Word split one over two formatting runs. A placeholder the AI wrote differently, such as `Person 1` or `Person_1` for `Person-1`, is not replaced: the status bar counts them, and after saving it also counts placeholders that were shown but not found in the file. Bringing names back does not clean metadata; the author and dates the AI tool wrote stay in the file.
 
 ## Office files
 

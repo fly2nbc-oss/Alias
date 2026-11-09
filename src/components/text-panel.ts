@@ -59,7 +59,8 @@ export function renderTextPanel(container: HTMLElement): void {
   });
 
   // A locked result: Ctrl+V does what "Paste AI's answer" does (new answer in step 2),
-  // typing points to "Change text" in the status bar
+  // typing points to "Change text" in the status bar. In an editable text (also the AI's file)
+  // Ctrl+V is a normal edit, e.g. to fix a placeholder the AI changed.
   editor.addEventListener('paste', (e) => {
     const s = getState();
     if (!showingResult(s) || s.isProcessing) return;
@@ -129,5 +130,5 @@ const EMPTY_ENCODE = `
 
 const EMPTY_DECODE = `
   <div class="empty-icon">${icon(P.paste, 32)}</div>
-  <p class="empty-say">Paste the AI's answer here.</p>
-  <p class="empty-keys">${kbd('Ctrl', 'V')} paste · ${kbd('Ctrl', 'Enter')} next step</p>`;
+  <p class="empty-say">Paste the AI's answer here, or open the file the AI sent back.</p>
+  <p class="empty-keys">${kbd('Ctrl', 'V')} paste · ${kbd('Ctrl', 'O')} open · or drop a file here</p>`;

@@ -34,13 +34,15 @@ const PLZ_PREFIXES = new Set(dataLines(plzRaw));
 
 // House number with optional letter. The Rust original `\d+\s?[a-zA-Z]?\b` took the following
 // space along ("Hauptstraße 5 "), because `\b` then matches before the next word.
+// Between street and number, and PLZ and town, only spaces: a tab is a cell border (Excel, CSV),
+// so "Total⇥1234" in two cells is no street.
 const STREET_REGEX = rx(
-  String.raw`(?u)\b[A-ZÄÖÜ][a-zäöüß]+(?:straße|str\.|weg|gasse|platz|allee|ring|damm|ufer|steig|pfad|chaussee|promenade|brücke|berg|tal|feld|hof|markt|graben)\s*\d+(?:\s?[a-zA-Z])?\b`,
+  String.raw`(?u)\b[A-ZÄÖÜ][a-zäöüß]+(?:straße|str\.|weg|gasse|platz|allee|ring|damm|ufer|steig|pfad|chaussee|promenade|brücke|berg|tal|feld|hof|markt|graben)[ \u00a0]*\d+(?:[ \u00a0]?[a-zA-Z])?\b`,
 );
 const STREET_PREFIX_REGEX = rx(
-  String.raw`(?u)\b(?:Am|An\sder|An\sdem|Auf\sder|Auf\sdem|Im|In\sder|In\sdem|Zum|Zur|Bei\sder|Bei\sdem)\s+[A-ZÄÖÜ][a-zäöüß]+\s*\d+(?:\s?[a-zA-Z])?\b`,
+  String.raw`(?u)\b(?:Am|An\sder|An\sdem|Auf\sder|Auf\sdem|Im|In\sder|In\sdem|Zum|Zur|Bei\sder|Bei\sdem)\s+[A-ZÄÖÜ][a-zäöüß]+[ \u00a0]*\d+(?:[ \u00a0]?[a-zA-Z])?\b`,
 );
-const PLZ_ORT_REGEX = rx(String.raw`(?u)\b(\d{5})\s+([A-ZÄÖÜ][a-zäöüß]+(?:-[a-zäöüß]+)?)\b`);
+const PLZ_ORT_REGEX = rx(String.raw`(?u)\b(\d{5})[ \u00a0]+([A-ZÄÖÜ][a-zäöüß]+(?:-[a-zäöüß]+)?)\b`);
 
 function validPlz(plz: string): boolean {
   if (!/^[0-9]{5}$/.test(plz) || plz.startsWith('00')) return false;
@@ -68,9 +70,14 @@ export function detectAddress(text: string): Candidate[] {
     }
   });
 
+  // Address over two lines: the street ends its line and the PLZ starts the next one. Otherwise
+  // (e.g. Excel rows with an address in each) the block would run across cells and rows.
   const blocks: Span[] = [];
   for (let i = 0; i + 1 < lines.length; i++) {
-    for (const s of streets[i]) for (const p of plzs[i + 1]) blocks.push([s[0], p[1]]);
+    for (const s of streets[i]) {
+      if (!/^[ \u00a0,]*$/.test(text.slice(s[1], lines[i][1]))) continue;
+      for (const p of plzs[i + 1]) if (/^[ \u00a0]*$/.test(text.slice(lines[i + 1][0], p[0]))) blocks.push([s[0], p[1]]);
+    }
   }
   const blockIndex = new SpanIndex(text.length);
   for (const b of blocks) blockIndex.add(b[0], b[1]);
@@ -231,7 +238,8 @@ const BRANDS = dataLines(brandsRaw);
 const BRAND_REGEX = BRANDS.length
   ? rx(`(?i)\\b(?:${BRANDS.map(escapeRe).join('|')})\\b`)
   : null;
-const PRODUCT_CODE_REGEX = rx(String.raw`(?u)\b[A-Z][A-Za-z]*\s?[A-Z]?\d{1,4}[a-zA-Z]?\b`);
+// Only a space between name and number: a tab is a cell border ("Total⇥1234" is two cells)
+const PRODUCT_CODE_REGEX = rx(String.raw`(?u)\b[A-Z][A-Za-z]*[ \u00a0]?[A-Z]?\d{1,4}[a-zA-Z]?\b`);
 const PRODUCT_CODE_EXCLUDE = new Set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6']);
 // Rust: `\s+[:.]?\s*`; without a colon, two whitespace quantifiers follow each other directly and
 // backtrack quadratically in JS; `\s+(?:[:.]\s*)?` describes the same strings, and the

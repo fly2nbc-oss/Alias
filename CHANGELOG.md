@@ -13,6 +13,7 @@ Alias is now a **browser app**: one HTML file, `alias.html`, that runs in Edge o
 
 ### Added
 
+- **Files through the AI and back**: after **Hide names** in an opened file, the blue button is **Save file for AI** (a copy with placeholders, `…_anonym.docx`). In *2 · AI's answer*, **Open AI's file** (or `Ctrl+O`, or dropping a file there) opens the file the AI sent back, in any format Alias reads; **Bring names back** and **Save file** write it with the real names in its format (`…_original.docx`). Placeholders in other capitalization or split over two Word runs are brought back; the status bar counts placeholders the AI wrote differently (`Person 1` for `Person-1`) and those not found in the saved file. *Save ▾* also has **Copy the text**.
 - **Windows installer**: the release has `alias_<version>_windows-installer.zip`. Its `install.cmd` installs Alias for the current user (no admin rights), adds it to the Start menu, opening in its own Edge window, and to *Settings > Apps*. Alias runs with **its own Edge profile**, so other local HTML files cannot read the list of names. `uninstall.cmd` removes it again; `/purge` also deletes the list of names and the smart name finder.
 - **Clean Office copies**: an encoded copy loses author, last editor, company, manager, dates, template path, custom properties, the people list, the thumbnail and JPEG metadata; comment and revision authors become "Author". Alt texts, field codes, hyperlink targets, formulas, chart and pivot caches, Excel sheet names (in formulas too) and embedded Office files are encoded, and so is the file name. Alias lists what it removed and warns about parts it cannot check (images, OLE objects, macros).
 - **Everything that is replaced is shown**: footnotes, comments, tracked deletions, text boxes, charts, slide masters, formulas, alt texts, links and properties appear in the text, so Find names can find them.
@@ -27,7 +28,7 @@ Alias is now a **browser app**: one HTML file, `alias.html`, that runs in Edge o
 
 ### Changed
 
-- **One button for the next step, words a child understands**: one bar at the top with *1 · My text | 2 · AI's answer* and a single blue button on the right that always names the next step: **Open file → Find names → Hide names → Copy for AI → Paste AI's answer → Bring names back → Copy**. **Paste AI's answer** goes to step 2 and pastes from the clipboard (or asks for `Ctrl+V`). Step 2 stays greyed out until the names are hidden. The original, the hidden text, the AI's answer and the restored answer are all kept; results are locked, **Change text** / **Change answer** in the status bar edits them again. *Save ▾* offers a copy in the original format and the text.
+- **One button for the next step, words a child understands**: one bar at the top with *1 · My text | 2 · AI's answer* and a single blue button on the right that always names the next step: **Open file → Find names → Hide names → Copy for AI → Paste AI's answer → Bring names back → Copy**, and for a file **… → Hide names → Save file for AI → Open AI's file → Bring names back → Save file**. **Paste AI's answer** goes to step 2 and pastes from the clipboard (or asks for `Ctrl+V`). Step 2 stays greyed out until the names are hidden. The original, the hidden text, the AI's answer and the restored answer are all kept; results are locked, **Change text** / **Change answer** in the status bar edits them again. *Save ▾* offers a copy in the original format and the text.
 - **Status bar**: says in one sentence what happened and what to do next ("7 names hidden in 9 places · Now copy the text and give it to the AI."), with the file name, *Locked · Change text* and the state of the name finder. The start view shows the five steps as pictures.
 - **New look**: the shared design system v2 – calmer colours, neutral grey dark mode, 40 px top bar, 32 px controls, hints at the top centre, Lucide icons.
 - **Replacement ignores capitalization and respects word boundaries**: "MÜLLER" is replaced by the entry "Müller"; "Max" is no longer replaced inside "Maximilian"; "Person-1" no longer matches inside "Person-10". Replacement runs in one pass, so an inserted alias is never replaced again. Highlighting uses the same matching.
@@ -44,6 +45,7 @@ Alias is now a **browser app**: one HTML file, `alias.html`, that runs in Edge o
 - **Surnames on their own**: "Frau Hoffmann" next to "Laura Hoffmann" was merged into the full name and stayed in plain text after encoding; it now gets its own entry.
 - **Blank lines** no longer double when typing in the editor.
 - **Street addresses** no longer include the space after the house number.
+- **Addresses in tables**: in an Excel sheet or CSV with an address in each row, the addresses were not found, and a cell such as "Total" next to a number cell was taken for a street or product code. Street, post code and product codes no longer run across cells.
 
 ## [1.1.0] – 2026-11-03
 

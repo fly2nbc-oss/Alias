@@ -14,6 +14,7 @@ const TAG_ICON: Record<TagIcon, string> = {
   eye: P.eye,
   check: P.check,
   paste: P.paste,
+  file: P.fileText,
   alert: P.circleAlert,
 };
 
@@ -73,7 +74,7 @@ export function renderStatusBar(container: HTMLElement): void {
     if (st.lock) {
       const btn = q('sb-change');
       btn.textContent = st.lock.link;
-      btn.title = st.lock.link === 'Change text' ? 'Edit your text again (the placeholders are dropped)' : "Edit the AI's answer again";
+      btn.title = st.lock.link === 'Change text' ? 'Edit your text again (the placeholders are dropped)' : "Edit the AI's answer again (as text: the AI's file is let go)";
       q('sb-lock').title = 'This text is locked so that it matches what you give the AI.';
     }
 

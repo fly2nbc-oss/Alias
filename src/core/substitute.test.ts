@@ -1,7 +1,7 @@
 /** Substitution: case, word boundaries, overlap; text codec */
 import { describe, expect, it } from 'vitest';
 import type { AliasEntry } from '../types';
-import { applyMatches, findMatches, pairs, substitute, type Pair } from './substitute';
+import { applyMatches, changedPlaceholders, findMatches, pairs, substitute, type Pair } from './substitute';
 import { decodeText, encodeText } from './text-codec';
 
 const E = (original: string, alias: string, id = original): AliasEntry => ({ id, original, alias, category: 'person', confirmed: true });
@@ -108,5 +108,22 @@ describe('text codec', () => {
     for (const e of ['utf16le', 'utf16be', 'utf8bom'] as const) {
       expect(decodeText(encodeText('﻿A', e))).toEqual(['﻿A', e]);
     }
+  });
+});
+
+describe('changedPlaceholders (written differently by the AI)', () => {
+  const list = [E('Laura Hoffmann', 'Person-1', 'a'), E('Thomas Brenner', 'Person-2', 'b'), E('Nordwind GmbH', 'Company-1', 'c')];
+
+  it('finds "Person 1", "Person_1", "Person1", "Person–2" but not the placeholder itself', () => {
+    const text = 'Person-1 and PERSON-2 are fine. Person 1, Person_1, person1 and Person–2 are not.';
+    expect(changedPlaceholders(text, list)).toEqual({ count: 4, sample: 'Person 1' });
+    // A case change is brought back, so it does not count
+    expect(dec('PERSON-2 met person-1.', ...list)).toBe('Thomas Brenner met Laura Hoffmann.');
+  });
+
+  it('ignores numbers that are no placeholder in the list and other words', () => {
+    expect(changedPlaceholders('Person 7, Person-10, Personal 1, Company 12, 2 Person', list)).toEqual({ count: 0, sample: null });
+    expect(changedPlaceholders('Person 1', [E('x', 'Kunde A', 'k')])).toEqual({ count: 0, sample: null });
+    expect(changedPlaceholders('Person-01', list).count).toBe(1);
   });
 });
